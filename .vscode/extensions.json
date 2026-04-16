@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "github.vscode-pull-request-github",
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "formulahendry.auto-rename-tag",
+    "christian-kohler.path-intellisense"
+  ]
+}

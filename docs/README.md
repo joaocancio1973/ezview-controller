@@ -28,6 +28,8 @@ Objetivos desta documentacao:
   - roteiro oficial para conectar o projeto ao GitHub
 - `governanca-versionamento-git.md`
   - regras e preparacao do projeto para versionamento Git
+- `automacao-local-git.md`
+  - primeira camada de automacao local para checklist, hook e padrao de commit
 - `vscode-setup.md`
   - configuracao recomendada do VSCode para trabalhar no projeto
 - `regras-de-negocio.md`

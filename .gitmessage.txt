@@ -1,0 +1,12 @@
+# Tipo: feat | fix | docs | refactor | style | chore
+# Escopo opcional: (financeiro | acessos | mensagens | manutencao | docs)
+# Exemplo:
+# feat(financeiro): iniciar modelagem funcional da fase 1
+#
+# Resumo curto e objetivo na primeira linha.
+# Se necessario, detalhe abaixo:
+#
+# - o que mudou
+# - por que mudou
+# - se houve impacto em banco, docs ou comportamento
+

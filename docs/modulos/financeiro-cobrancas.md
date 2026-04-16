@@ -115,6 +115,22 @@ Quando o admin rejeita:
 - `status_pagamento` vai para `rejeitado`
 - a cobranca vai para `rejeitado`
 
+## Tela administrativa da fase 1
+
+O primeiro front do modulo pertence apenas ao `admin`.
+
+Ele entrega:
+
+- menu `Financeiro`
+- filtros por:
+  - condominio
+  - status
+  - origem
+  - vencimento
+- tabela compacta de cobrancas
+- detalhe da cobranca
+- historico financeiro append-only
+
 ## Evolucao recomendada
 
 ### Fase 2

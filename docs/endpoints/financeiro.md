@@ -62,3 +62,10 @@ com:
 - criacao automatica de cobranca para reserva com taxa
 - sincronizacao de status financeiro
 - trilha de eventos financeiros
+
+## Tela administrativa atual
+
+Na fase atual, o `admin` ja possui tela propria de leitura financeira, consumindo:
+
+- `GET /financeiro/cobrancas`
+- `GET /financeiro/cobrancas/:id`

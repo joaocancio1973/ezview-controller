@@ -531,6 +531,10 @@ function getAllowedPage(page, user) {
     return "dashboard";
   }
 
+  if (page === "financeiro" && user?.perfil !== "admin") {
+    return "dashboard";
+  }
+
   if (page === "funcionarios" && user?.perfil !== "admin") {
     return "dashboard";
   }
@@ -630,6 +634,10 @@ function renderPage(page) {
 
     case "mensagens":
       renderMensagens(container);
+      break;
+
+    case "financeiro":
+      renderFinanceiro(container);
       break;
 
     case "funcionarios":

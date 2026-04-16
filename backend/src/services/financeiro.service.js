@@ -292,3 +292,214 @@ export async function registrarPagamentoSinalizadoPorMensagemService({ usuario, 
     if (connection) connection.release();
   }
 }
+
+async function getAdminCondominiosIds(usuarioId) {
+  const [rows] = await db.query(
+    `
+    SELECT id
+    FROM condominios
+    WHERE admin_id = ?
+    ORDER BY criado_em ASC
+    `,
+    [usuarioId],
+  );
+
+  return rows.map((row) => row.id);
+}
+
+function normalizeOrigemFinanceira(value) {
+  const normalized = normalizeText(value);
+  const validos = new Set(["reserva", "taxa_condominial", "mensalidade", "multa", "avulso"]);
+  return validos.has(normalized) ? normalized : null;
+}
+
+function normalizeStatusFinanceiro(value) {
+  const normalized = normalizeText(value);
+  const validos = new Set(["rascunho", "pendente", "em_analise", "pago", "isento", "cancelado", "rejeitado"]);
+  return validos.has(normalized) ? normalized : null;
+}
+
+export async function listFinanceiroCobrancasService(usuario, filtros = {}) {
+  if (usuario?.perfil !== "admin") {
+    const error = new Error("Apenas admin pode acessar cobrancas");
+    error.status = 403;
+    throw error;
+  }
+
+  const condominioIds = await getAdminCondominiosIds(usuario.id);
+  if (!condominioIds.length) {
+    return { cobrancas: [], resumo: { total: 0, pendentes: 0, em_analise: 0, pagas: 0, vencidas: 0, valor_total: 0 } };
+  }
+
+  const status = normalizeStatusFinanceiro(filtros.status);
+  const origem = normalizeOrigemFinanceira(filtros.origem);
+  const condominioIdFiltro = normalizeText(filtros.condominio_id);
+  const unidadeId = normalizeText(filtros.unidade_id);
+  const vencimentoDe = normalizeText(filtros.vencimento_de);
+  const vencimentoAte = normalizeText(filtros.vencimento_ate);
+
+  const params = [];
+  let where = ` WHERE fc.condominio_id IN (${condominioIds.map(() => "?").join(",")}) `;
+  params.push(...condominioIds);
+
+  if (condominioIdFiltro) {
+    where += " AND fc.condominio_id = ? ";
+    params.push(condominioIdFiltro);
+  }
+
+  if (status) {
+    where += " AND fc.status = ? ";
+    params.push(status);
+  }
+
+  if (origem) {
+    where += " AND fc.origem = ? ";
+    params.push(origem);
+  }
+
+  if (unidadeId) {
+    where += " AND fc.unidade_id = ? ";
+    params.push(unidadeId);
+  }
+
+  if (vencimentoDe) {
+    where += " AND DATE(fc.vencimento_em) >= ? ";
+    params.push(vencimentoDe);
+  }
+
+  if (vencimentoAte) {
+    where += " AND DATE(fc.vencimento_em) <= ? ";
+    params.push(vencimentoAte);
+  }
+
+  const [rows] = await db.query(
+    `
+    SELECT
+      fc.id,
+      fc.condominio_id,
+      c.nome_fantasia AS condominio_nome,
+      fc.unidade_id,
+      u.identificacao AS unidade_identificacao,
+      fc.usuario_id,
+      usr.nome_completo AS usuario_nome,
+      fc.reserva_id,
+      fc.origem,
+      fc.forma_cobranca,
+      fc.referencia_titulo,
+      fc.valor,
+      fc.status,
+      fc.vencimento_em,
+      fc.pago_em,
+      fc.atualizado_em,
+      fc.observacao_morador,
+      r.status AS reserva_status,
+      r.status_pagamento AS reserva_status_pagamento
+    FROM financeiro_cobrancas fc
+    INNER JOIN condominios c ON c.id = fc.condominio_id
+    INNER JOIN unidades u ON u.id = fc.unidade_id
+    INNER JOIN usuarios usr ON usr.id = fc.usuario_id
+    LEFT JOIN reservas r ON r.id = fc.reserva_id
+    ${where}
+    ORDER BY
+      CASE
+        WHEN fc.status IN ('pendente', 'em_analise', 'rejeitado') THEN 0
+        WHEN fc.status IN ('pago', 'isento') THEN 1
+        ELSE 2
+      END,
+      fc.vencimento_em ASC,
+      fc.criado_em DESC
+    `,
+    params,
+  );
+
+  const agora = new Date();
+  const resumo = rows.reduce(
+    (acc, item) => {
+      acc.total += 1;
+      acc.valor_total += Number(item.valor || 0);
+      if (item.status === "pendente") acc.pendentes += 1;
+      if (item.status === "em_analise") acc.em_analise += 1;
+      if (item.status === "pago") acc.pagas += 1;
+      if (item.vencimento_em && ["pendente", "em_analise", "rejeitado"].includes(item.status) && new Date(item.vencimento_em) < agora) {
+        acc.vencidas += 1;
+      }
+      return acc;
+    },
+    { total: 0, pendentes: 0, em_analise: 0, pagas: 0, vencidas: 0, valor_total: 0 },
+  );
+
+  return { cobrancas: rows, resumo };
+}
+
+export async function getFinanceiroCobrancaDetalheService(usuario, cobrancaId) {
+  if (usuario?.perfil !== "admin") {
+    const error = new Error("Apenas admin pode acessar detalhe financeiro");
+    error.status = 403;
+    throw error;
+  }
+
+  const condominioIds = await getAdminCondominiosIds(usuario.id);
+  if (!condominioIds.length) {
+    const error = new Error("Admin sem condominio ativo");
+    error.status = 404;
+    throw error;
+  }
+
+  const [rows] = await db.query(
+    `
+    SELECT
+      fc.*,
+      c.nome_fantasia AS condominio_nome,
+      u.identificacao AS unidade_identificacao,
+      usr.nome_completo AS usuario_nome,
+      usr.email AS usuario_email,
+      r.status AS reserva_status,
+      r.status_pagamento AS reserva_status_pagamento,
+      r.data_inicio AS reserva_data_inicio,
+      r.data_fim AS reserva_data_fim,
+      a.nome AS area_nome,
+      confirmador.nome_completo AS confirmado_por_nome
+    FROM financeiro_cobrancas fc
+    INNER JOIN condominios c ON c.id = fc.condominio_id
+    INNER JOIN unidades u ON u.id = fc.unidade_id
+    INNER JOIN usuarios usr ON usr.id = fc.usuario_id
+    LEFT JOIN reservas r ON r.id = fc.reserva_id
+    LEFT JOIN areas_comuns a ON a.id = r.area_id
+    LEFT JOIN usuarios confirmador ON confirmador.id = fc.confirmado_por
+    WHERE fc.id = ?
+      AND fc.condominio_id IN (${condominioIds.map(() => "?").join(",")})
+    LIMIT 1
+    `,
+    [cobrancaId, ...condominioIds],
+  );
+
+  if (!rows.length) {
+    const error = new Error("Cobranca nao encontrada");
+    error.status = 404;
+    throw error;
+  }
+
+  const cobranca = rows[0];
+  const [eventos] = await db.query(
+    `
+    SELECT
+      fe.id,
+      fe.tipo_evento,
+      fe.status_anterior,
+      fe.status_novo,
+      fe.descricao,
+      fe.criado_em,
+      fe.origem_ator,
+      usr.nome_completo AS usuario_nome,
+      m.titulo AS mensagem_titulo
+    FROM financeiro_eventos fe
+    LEFT JOIN usuarios usr ON usr.id = fe.usuario_id
+    LEFT JOIN mensagens m ON m.id = fe.mensagem_id
+    WHERE fe.cobranca_id = ?
+    ORDER BY fe.criado_em DESC
+    `,
+    [cobrancaId],
+  );
+
+  return { cobranca, eventos };
+}

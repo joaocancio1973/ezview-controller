@@ -27,6 +27,7 @@ import ocorrenciasRoutes from './routes/ocorrencias.routes.js';
 import inboxUnidadeRoutes from './routes/inbox-unidade.routes.js';
 import mensagensRoutes from "./routes/mensagens.routes.js";
 import manutencoesRoutes from "./routes/manutencoes.routes.js";
+import financeiroRoutes from "./routes/financeiro.routes.js";
 
 dotenv.config();
 
@@ -92,6 +93,9 @@ app.use("/ocorrencias", ocorrenciasRoutes);
 
 // inbox interno / mensagens
 app.use("/mensagens", mensagensRoutes);
+
+// financeiro e cobrancas
+app.use("/financeiro", financeiroRoutes);
 
 // manutencoes e reformas
 app.use("/manutencoes", manutencoesRoutes);

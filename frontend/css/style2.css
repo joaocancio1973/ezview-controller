@@ -1,0 +1,191 @@
+/* ===== RESET ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body.dark-bg {
+  background: radial-gradient(circle at top, #07101f 0%, #02040a 100%);
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  font-family: "Inter", sans-serif;
+}
+
+/* ===== MARCA-D’ÁGUA NEURAL ===== */
+body.dark-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("../img/sinapse.png") no-repeat center center;
+  background-size: 75%;
+  opacity: 0.06;
+  filter: drop-shadow(0 0 10px #00eaff);
+  z-index: 1;
+}
+
+/* ===== LOGIN PANEL ===== */
+.login-panel {
+  width: 420px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(0, 255, 255, 0.25);
+  box-shadow:
+    0 0 12px rgba(0, 255, 255, 0.3),
+    inset 0 0 12px rgba(0, 255, 255, 0.12);
+  border-radius: 22px;
+  padding: 36px;
+  backdrop-filter: blur(14px);
+  position: relative;
+  z-index: 2;
+}
+
+.activation-panel {
+  width: min(100%, 480px);
+}
+
+/* ===== TÍTULOS ===== */
+.brand-title {
+  font-size: 2.1rem;
+  color: #ffffff;
+  text-shadow: 0 0 12px cyan;
+}
+
+.brand-subtitle {
+  font-size: 0.95rem;
+  color: #c9d6ff;
+  opacity: 0.8;
+}
+
+/* ===== INPUT FUTURISTA ===== */
+.dark-input {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(0, 255, 255, 0.2) !important;
+  color: #e8f8ff !important;
+  padding: 12px 14px;
+  border-radius: 10px;
+  transition: 0.25s;
+}
+
+.dark-input:focus {
+  outline: none;
+  border-color: cyan !important;
+  box-shadow: 0 0 8px cyan;
+  background: rgba(0, 255, 255, 0.08) !important;
+}
+
+/* LABELS */
+.form-label {
+  color: #aee7ff;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/* CHECKBOX */
+.form-check-input {
+  background-color: transparent !important;
+  border: 1px solid cyan !important;
+}
+
+.form-check-input:checked {
+  background-color: cyan !important;
+}
+
+.form-check-label {
+  color: #c9d6ff;
+  opacity: 0.8;
+}
+
+/* ===== BOTÃO LOGIN ===== */
+.btn-login {
+  background: linear-gradient(120deg, #0096c7, #00d5ff);
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 14px rgba(0, 200, 255, 0.45);
+  transition: 0.3s;
+}
+
+.btn-login:hover {
+  box-shadow: 0 0 20px rgba(0, 200, 255, 0.8);
+  transform: translateY(-2px);
+}
+
+.btn-login:active {
+  transform: scale(0.98);
+}
+
+/* ===== ERRO LOGIN ===== */
+#loginError {
+  font-size: 0.9rem;
+  border-radius: 8px;
+}
+
+/* ===== FOOTER ===== */
+.footer-text {
+  color: #b6c9ff;
+  opacity: 0.7;
+  z-index: 3;
+}
+
+.activation-state {
+  color: #c9d6ff;
+  opacity: 0.85;
+  margin-bottom: 18px;
+}
+
+.activation-summary {
+  margin-bottom: 20px;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(0, 255, 255, 0.18);
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-row span {
+  color: #aee7ff;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.summary-row strong {
+  color: #f4fbff;
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+.activation-success {
+  margin-top: 12px;
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 480px) {
+  .login-panel {
+    width: 90%;
+    padding: 28px;
+  }
+
+  body.dark-bg::before {
+    background-size: 115%;
+    opacity: 0.04;
+  }
+
+  .brand-title {
+    font-size: 1.8rem;
+  }
+}

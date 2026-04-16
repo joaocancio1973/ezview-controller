@@ -1,0 +1,40 @@
+# Sistema operacional
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Node / dependencias
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Ambiente
+**/.env
+**/.env.*
+!.env.example
+
+# Logs e temporarios
+*.log
+*.tmp
+*.temp
+tmp/
+tmp-edge-pdf/
+backend/tmp-*.mjs
+
+# Uploads e arquivos gerados em runtime
+frontend/uploads/**
+!frontend/uploads/.gitkeep
+!frontend/uploads/mensagens/.gitkeep
+!frontend/uploads/ocorrencias/.gitkeep
+!frontend/uploads/perfis/.gitkeep
+
+# Artefatos locais
+coverage/
+dist/
+build/

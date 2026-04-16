@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EzView - Relatorio Executivo Comercial</title>
+  <style>
+    :root {
+      --bg: #f3f6f8;
+      --paper: #ffffff;
+      --ink: #16323a;
+      --muted: #61737b;
+      --line: #dbe4e8;
+      --brand: #0d6f73;
+      --brand-soft: #dff5f3;
+      --accent: #c56a29;
+      --accent-soft: #fff1e7;
+      --good: #4f7a2f;
+      --good-soft: #eef7e3;
+      --shadow: 0 18px 40px rgba(17, 42, 51, 0.08);
+      --font: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(13,111,115,.10), transparent 22%),
+        linear-gradient(180deg, #fbfcfd 0%, var(--bg) 100%);
+    }
+
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 34px 24px 56px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(13,111,115,.96), rgba(22,50,58,.98));
+      color: white;
+      border-radius: 28px;
+      padding: 34px 36px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -40px;
+      bottom: -50px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.08);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.12);
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    h1,h2,h3 { margin: 0; }
+    h1 { font-size: 34px; line-height: 1.08; margin-top: 14px; max-width: 760px; }
+    h2 { font-size: 24px; }
+    h3 { font-size: 17px; }
+
+    .hero p {
+      max-width: 860px;
+      margin: 16px 0 0;
+      color: rgba(255,255,255,.86);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 28px;
+    }
+
+    .hero-card {
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 18px;
+      padding: 14px 16px;
+    }
+
+    .hero-card strong {
+      display: block;
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    .hero-card span {
+      display: block;
+      color: rgba(255,255,255,.78);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .section {
+      margin-top: 24px;
+      background: var(--paper);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(20,54,61,.05);
+    }
+
+    .section p.lead {
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 14px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      background: linear-gradient(180deg, #fff 0%, #fbfdfe 100%);
+    }
+
+    .panel.brand { background: linear-gradient(180deg, #effaf9 0%, #fff 100%); }
+    .panel.accent { background: linear-gradient(180deg, #fff8f2 0%, #fff 100%); }
+    .panel.good { background: linear-gradient(180deg, #f7fcea 0%, #fff 100%); }
+
+    .panel p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .tag.brand { background: var(--brand-soft); color: var(--brand); }
+    .tag.accent { background: var(--accent-soft); color: var(--accent); }
+    .tag.good { background: var(--good-soft); color: var(--good); }
+
+    ul.clean {
+      list-style: none;
+      padding: 0;
+      margin: 14px 0 0;
+    }
+
+    ul.clean li {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #f7fafb;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    ul.clean li + li { margin-top: 8px; }
+
+    .timeline {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .step {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      background: #fff;
+      position: relative;
+    }
+
+    .step::after {
+      content: "→";
+      position: absolute;
+      top: 18px;
+      right: -12px;
+      color: var(--brand);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .step:last-child::after { display: none; }
+
+    .step-number {
+      width: 30px;
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: var(--brand-soft);
+      color: var(--brand);
+      font-weight: 800;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .step p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 13px;
+    }
+
+    .footer-note {
+      margin-top: 22px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 980px) {
+      .hero-grid, .grid-3, .timeline { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .step:nth-child(2)::after { display: none; }
+      .step:nth-child(4)::after { display: none; }
+    }
+
+    @media (max-width: 760px) {
+      .page { padding: 18px 14px 34px; }
+      .hero, .section { padding: 20px; }
+      .hero-grid, .grid-3, .grid-2, .timeline { grid-template-columns: 1fr; }
+      .step::after { display: none; }
+      h1 { font-size: 28px; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .page { max-width: none; padding: 0; }
+      .hero, .section { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div class="eyebrow">EzView • Relatorio executivo comercial</div>
+      <h1>Panorama atual do produto, maturidade da plataforma e proximos capitulos estrategicos</h1>
+      <p>
+        Este material foi preparado para apresentacao comercial e alinhamento executivo. O objetivo e mostrar
+        com clareza o que o EzView ja construiu, o que esta consolidado no produto e quais frentes ainda podem
+        ampliar valor de mercado, operacao condominial e diferencial competitivo.
+      </p>
+      <div class="hero-grid">
+        <div class="hero-card">
+          <strong>Base robusta</strong>
+          <span>O projeto ja cobre operacao real de condominio com administracao, morador, portaria, reservas, ocorrencias e mensagens.</span>
+        </div>
+        <div class="hero-card">
+          <strong>Pronto para crescer</strong>
+          <span>As proximas evolucoes mais fortes sao financeiro, prestadores em profundidade e experiencia mobile do morador.</span>
+        </div>
+        <div class="hero-card">
+          <strong>Visao comercial</strong>
+          <span>O produto ja nao e apenas um cadastro: ele caminha para uma plataforma de gestao condominial com operacao, auditoria e servicos.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>1. O que o EzView ja entrega hoje</h2>
+      <p class="lead">
+        O sistema ja possui uma espinha dorsal muito consistente. Essa base permite vender nao apenas uma promessa,
+        mas uma plataforma funcional em amadurecimento, com varios modulos conectados entre si.
+      </p>
+      <div class="grid-3">
+        <article class="panel brand">
+          <span class="tag brand">Estrutura</span>
+          <h3>Base condominial</h3>
+          <ul class="clean">
+            <li>Condominios, torres e unidades</li>
+            <li>Moradores, residentes e ativacao por convite</li>
+            <li>Veiculos, vagas e contexto da unidade</li>
+          </ul>
+        </article>
+        <article class="panel accent">
+          <span class="tag accent">Operacao</span>
+          <h3>Dia a dia do condominio</h3>
+          <ul class="clean">
+            <li>Controle de acesso e fila da portaria</li>
+            <li>Prestadores recorrentes e contatos utilitarios</li>
+            <li>Funcionarios e sessao operacional</li>
+          </ul>
+        </article>
+        <article class="panel good">
+          <span class="tag good">Relacionamento</span>
+          <h3>Servico ao morador</h3>
+          <ul class="clean">
+            <li>Reservas de areas comuns</li>
+            <li>Ocorrencias com fotos</li>
+            <li>Mensagens internas em formato de caixa postal</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>2. Maturidade atual do produto</h2>
+      <p class="lead">
+        O EzView ja demonstra maturidade em tres eixos: identidade de usuario, operacao do condominio e rastreabilidade.
+      </p>
+      <div class="grid-3">
+        <article class="panel">
+          <h3>Identidade e contexto</h3>
+          <p>Perfis distintos para admin, funcionario e morador, com escopo por condominio e leitura contextual da unidade.</p>
+        </article>
+        <article class="panel">
+          <h3>Operacao viva</h3>
+          <p>Fluxos como acessos, reservas, ocorrencias e manutencao ja dialogam com a realidade do condominio.</p>
+        </article>
+        <article class="panel">
+          <h3>Auditoria e historico</h3>
+          <p>Eventos, sessoes, mensagens, anexos e historicos fortalecem confianca e profissionalismo do sistema.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>3. O que ainda falta ou merece fase 2</h2>
+      <p class="lead">
+        Os proximos blocos abaixo sao os que mais podem ampliar valor comercial, profundidade funcional e posicionamento do produto.
+      </p>
+      <div class="grid-2">
+        <article class="panel accent">
+          <span class="tag accent">Capitulo estrategico</span>
+          <h3>Financeiro e cobranca</h3>
+          <ul class="clean">
+            <li>Integracao real com pagamentos</li>
+            <li>Geracao de boleto e Pix</li>
+            <li>Confirmacao, conciliacao e baixa</li>
+            <li>Taxa condominial em nivel profissional</li>
+            <li>Historico financeiro por unidade</li>
+          </ul>
+        </article>
+        <article class="panel accent">
+          <span class="tag accent">Capitulo estrategico</span>
+          <h3>Prestadores de servico em profundidade</h3>
+          <ul class="clean">
+            <li>Agenda de atendimento por prestador</li>
+            <li>Reincidencia por empresa e tecnico</li>
+            <li>Vinculo mais forte com manutencao</li>
+            <li>Historico por unidade e area atendida</li>
+            <li>Bloqueios, alertas e controle mais fino</li>
+          </ul>
+        </article>
+        <article class="panel brand">
+          <span class="tag brand">Experiencia</span>
+          <h3>Morador mobile-first</h3>
+          <ul class="clean">
+            <li>Redesign com cara de app</li>
+            <li>Fluxos mais curtos em celular</li>
+            <li>Botões, leitura e navegação mobile</li>
+            <li>Onboarding e ajuda contextual</li>
+          </ul>
+        </article>
+        <article class="panel brand">
+          <span class="tag brand">Operacao ampliada</span>
+          <h3>Portaria e acessos fase 2</h3>
+          <ul class="clean">
+            <li>Refino do InBox</li>
+            <li>Credenciais e QR Code mais maduros</li>
+            <li>Troca de turno ainda mais auditavel</li>
+            <li>Relatorios operacionais mais ricos</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>4. Manutencao e reformas: novo capitulo ja iniciado</h2>
+      <p class="lead">
+        Este e um dos blocos mais promissores do produto. Ele eleva o EzView de um sistema de registro para um sistema
+        de gestao patrimonial do condominio.
+      </p>
+      <div class="grid-3">
+        <article class="panel good">
+          <h3>Ja iniciado</h3>
+          <p>Banco, backend e primeira tela de ordens de servico ja estao modelados e implantados.</p>
+        </article>
+        <article class="panel good">
+          <h3>Valor funcional</h3>
+          <p>Conecta ocorrencias, prestadores, acesso de executores e historico tecnico por ordem.</p>
+        </article>
+        <article class="panel good">
+          <h3>Proxima evolucao</h3>
+          <p>Planos preventivos, reformas estruturadas e historico tecnico por area ou equipamento.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>5. Ordem recomendada de implementacao</h2>
+      <p class="lead">
+        Se a prioridade for consolidar produto com apelo comercial e clareza de evolucao, esta e a ordem mais consistente.
+      </p>
+      <div class="timeline">
+        <article class="step">
+          <div class="step-number">1</div>
+          <h3>Financeiro</h3>
+          <p>Pagamento real, boleto, Pix, conciliacao e taxa condominial com criterio de mercado.</p>
+        </article>
+        <article class="step">
+          <div class="step-number">2</div>
+          <h3>Prestadores</h3>
+          <p>Transformar prestadores em um dominio mais profundo, ligado a manutencao e operacao tecnica.</p>
+        </article>
+        <article class="step">
+          <div class="step-number">3</div>
+          <h3>Experiencia do morador</h3>
+          <p>Redesenhar a experiencia mobile com foco em praticidade, senioridade de uso e valor percebido.</p>
+        </article>
+        <article class="step">
+          <div class="step-number">4</div>
+          <h3>Servicos premium</h3>
+          <p>Abrir a frente de conveniencia, parcerias e integracoes externas para ampliar diferencial competitivo.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>6. Leitura comercial resumida</h2>
+      <div class="grid-2">
+        <article class="panel">
+          <h3>O que o parceiro comercial pode perceber</h3>
+          <ul class="clean">
+            <li>O produto ja tem corpo funcional real.</li>
+            <li>Ja existe narrativa forte de operacao condominial.</li>
+            <li>Ha espaco claro para monetizacao futura.</li>
+            <li>O sistema pode ser apresentado como plataforma em evolucao, nao como prototipo cru.</li>
+          </ul>
+        </article>
+        <article class="panel">
+          <h3>Mensagem comercial central</h3>
+          <p>
+            O EzView ja demonstra capacidade de organizar a vida real do condominio: portaria, acesso, reserva,
+            manutencao, comunicacao e relacionamento com o morador. O proximo salto estrategico esta em transformar
+            isso em uma plataforma ainda mais completa com financeiro, experiencia mobile e servicos de valor agregado.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <p class="footer-note">
+      Documento executivo preparado para alinhamento comercial do projeto EzView. Recomendado abrir no navegador e salvar em PDF para compartilhamento.
+    </p>
+  </div>
+</body>
+</html>

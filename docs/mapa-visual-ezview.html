@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EzView - Mapa Visual da Aplicacao</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --panel-soft: #f8fbfc;
+      --text: #18313a;
+      --muted: #61757d;
+      --line: #d7e2e7;
+      --brand: #0d6f73;
+      --brand-soft: #dff4f2;
+      --accent: #c96f2d;
+      --accent-soft: #fff1e6;
+      --olive: #5f7b3e;
+      --olive-soft: #eef7e3;
+      --danger: #8e3b3b;
+      --shadow: 0 16px 40px rgba(16, 42, 51, 0.08);
+      --radius: 20px;
+      --radius-sm: 12px;
+      --font: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(13, 111, 115, 0.10), transparent 22%),
+        radial-gradient(circle at top right, rgba(201, 111, 45, 0.12), transparent 18%),
+        linear-gradient(180deg, #fbfcfd 0%, var(--bg) 100%);
+    }
+
+    .page {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 36px 28px 72px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(13, 111, 115, 0.95), rgba(24, 49, 58, 0.96));
+      color: #fff;
+      border-radius: 28px;
+      padding: 34px 36px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -60px -80px auto;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin-top: 16px;
+      font-size: 34px;
+      line-height: 1.08;
+      max-width: 760px;
+    }
+
+    .hero p {
+      margin: 16px 0 0;
+      max-width: 860px;
+      color: rgba(255, 255, 255, 0.86);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .hero-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 28px;
+    }
+
+    .meta-card {
+      background: rgba(255, 255, 255, 0.10);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      padding: 14px 16px;
+    }
+
+    .meta-card strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    .meta-card span {
+      display: block;
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .section {
+      margin-top: 28px;
+      background: var(--panel);
+      border: 1px solid rgba(24, 49, 58, 0.06);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 22px;
+    }
+
+    .section-header p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      max-width: 860px;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .print-note {
+      font-size: 12px;
+      color: var(--muted);
+      padding: 8px 12px;
+      background: var(--panel-soft);
+      border: 1px dashed var(--line);
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .map-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .domain {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdfe 100%);
+      padding: 18px;
+      min-height: 100%;
+    }
+
+    .domain.brand {
+      background: linear-gradient(180deg, #effafb 0%, #ffffff 100%);
+    }
+
+    .domain.accent {
+      background: linear-gradient(180deg, #fff7f0 0%, #ffffff 100%);
+    }
+
+    .domain.olive {
+      background: linear-gradient(180deg, #f6fbeF 0%, #ffffff 100%);
+    }
+
+    .domain-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .domain h3 {
+      font-size: 18px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .pill.brand {
+      background: var(--brand-soft);
+      color: var(--brand);
+    }
+
+    .pill.accent {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .pill.olive {
+      background: var(--olive-soft);
+      color: var(--olive);
+    }
+
+    .entity-list,
+    .flow-list,
+    .legend-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .entity-list li,
+    .flow-list li,
+    .legend-list li {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: var(--panel-soft);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .entity-list li + li,
+    .flow-list li + li,
+    .legend-list li + li {
+      margin-top: 8px;
+    }
+
+    .entity-list strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+
+    .relations {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .relation-chip {
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .flow-diagram {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      align-items: start;
+    }
+
+    .flow-column {
+      position: relative;
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff 0%, #f9fbfc 100%);
+      min-height: 100%;
+    }
+
+    .flow-column::after {
+      content: "→";
+      position: absolute;
+      top: 24px;
+      right: -14px;
+      font-size: 20px;
+      color: var(--brand);
+      font-weight: 700;
+    }
+
+    .flow-column:last-child::after {
+      display: none;
+    }
+
+    .flow-column h3 {
+      margin-bottom: 12px;
+      font-size: 18px;
+    }
+
+    .flow-column small {
+      display: block;
+      color: var(--muted);
+      margin-top: 10px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .timeline-card {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 18px;
+    }
+
+    .timeline-card h3 {
+      margin-bottom: 12px;
+      font-size: 17px;
+    }
+
+    .timeline-step {
+      position: relative;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .timeline-step strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 3px;
+      font-size: 13px;
+    }
+
+    .timeline-step::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 7px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--brand);
+    }
+
+    .timeline-step + .timeline-step {
+      margin-top: 12px;
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: 1.1fr 1.2fr;
+      gap: 18px;
+    }
+
+    .legend-panel {
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff 0%, #fafcfd 100%);
+    }
+
+    .legend-panel h3 {
+      margin-bottom: 14px;
+      font-size: 17px;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tag {
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .footer-note {
+      margin-top: 28px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 1100px) {
+      .map-grid,
+      .flow-diagram,
+      .timeline,
+      .legend,
+      .hero-meta {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .flow-column:nth-child(2)::after,
+      .flow-column:nth-child(4)::after {
+        display: none;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .page {
+        padding: 18px 14px 42px;
+      }
+
+      .hero,
+      .section {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      .map-grid,
+      .flow-diagram,
+      .timeline,
+      .legend,
+      .hero-meta {
+        grid-template-columns: 1fr;
+      }
+
+      .flow-column::after {
+        display: none;
+      }
+
+      .section-header {
+        flex-direction: column;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .page {
+        max-width: none;
+        padding: 0;
+      }
+
+      .hero,
+      .section {
+        box-shadow: none;
+        border: 1px solid #d9e1e5;
+        break-inside: avoid;
+      }
+
+      .print-note {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div class="eyebrow">EzView • Organograma funcional e relacional</div>
+      <h1>Mapa visual da aplicacao, dos modulos e do banco de dados do projeto</h1>
+      <p>
+        Esta pagina resume a estrutura real do EzView em formato visual, com foco em leitura executiva e tecnica.
+        A ideia aqui e enxergar o sistema por dominios, relacionamentos principais e fluxo operacional do condominio
+        sem cair num diagrama excessivamente poluido.
+      </p>
+      <div class="hero-meta">
+        <div class="meta-card">
+          <strong>Banco relacional</strong>
+          <span>Organizado por dominios centrais como identidade, condominio, portaria, reservas, mensagens e manutencao.</span>
+        </div>
+        <div class="meta-card">
+          <strong>Fluxo real</strong>
+          <span>Mostra como admin, funcionario e morador se cruzam no dia a dia do condominio.</span>
+        </div>
+        <div class="meta-card">
+          <strong>Pronto para PDF</strong>
+          <span>Abra no navegador e use a impressao do sistema para salvar como PDF com boa leitura.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>1. Mapa relacional por modulos</h2>
+          <p>
+            Em vez de mostrar cada tabela como um bloco isolado, o banco foi agrupado aqui por dominios funcionais.
+            Isso facilita enxergar como o sistema cresce: identidade, estrutura fisica, operacao da portaria,
+            reservas, manutencao, comunicacao e servicos de apoio.
+          </p>
+        </div>
+        <div class="print-note">Dica: esta pagina foi desenhada para abrir em navegador e imprimir bem.</div>
+      </div>
+
+      <div class="map-grid">
+        <article class="domain brand">
+          <div class="domain-header">
+            <h3>Identidade e contexto</h3>
+            <span class="pill brand">Nucleo</span>
+          </div>
+          <ul class="entity-list">
+            <li><strong>usuarios</strong>Base de identidade para admin, morador e funcionario.</li>
+            <li><strong>convites_ativacao</strong>Ativacao segura de contas, inclusive para funcionario e morador.</li>
+            <li><strong>admins</strong>Camada de apoio historica para administracao principal.</li>
+          </ul>
+          <div class="relations">
+            <span class="relation-chip">usuarios → condominios</span>
+            <span class="relation-chip">usuarios → mensagens</span>
+            <span class="relation-chip">usuarios → acessos</span>
+            <span class="relation-chip">usuarios → ocorrencias</span>
+          </div>
+        </article>
+
+        <article class="domain brand">
+          <div class="domain-header">
+            <h3>Estrutura condominial</h3>
+            <span class="pill brand">Base fisica</span>
+          </div>
+          <ul class="entity-list">
+            <li><strong>condominios</strong>Eixo de isolamento multi-tenant de quase todo o sistema.</li>
+            <li><strong>torres</strong>Segmentacao fisica interna por predio ou bloco.</li>
+            <li><strong>unidades</strong>Endereco operacional da vida real do morador.</li>
+            <li><strong>unidade_usuarios</strong>Relaciona moradores a unidade e define papel na unidade.</li>
+          </ul>
+          <div class="relations">
+            <span class="relation-chip">condominios → torres</span>
+            <span class="relation-chip">torres → unidades</span>
+            <span class="relation-chip">unidades ↔ usuarios</span>
+          </div>
+        </article>
+
+        <article class="domain olive">
+          <div class="domain-header">
+            <h3>Funcionarios e operacao</h3>
+            <span class="pill olive">Rotina interna</span>
+          </div>
+          <ul class="entity-list">
+            <li><strong>funcionarios</strong>Vinculo funcional de um usuario com um unico condominio.</li>
+            <li><strong>funcionarios_sessoes</strong>Sessoes de turno, portaria ativa e auditoria operacional.</li>
+          </ul>
+          <div class="relations">
+            <span class="relation-chip">usuarios → funcionarios</span>
+            <span class="relation-chip">condominios → funcionarios</span>
+            <span class="relation-chip">funcionarios → sessoes</span>
+          </div>
+        </article>
+
+        <article class="domain accent">
+          <div class="domain-header">
+            <h3>Portaria e controle de acesso</h3>
+            <span class="pill accent">Operacao viva</span>
+          </div>
+          <ul class="entity-list">
+            <li><strong>acessos_autorizacoes</strong>Nucleo da entrada de visitantes, prestadores e fluxos da portaria.</li>
+            <li><strong>acessos_eventos</strong>Rastro de entrada, saida, negacao e atendimento.</li>
+            <li><strong>inbox_visitantes_unidade</strong>Pessoas recorrentes por unidade com status operacional.</li>
+            <li><strong>colaboradores_unidade</strong>Baba, diarista, cuidador e outros perfis recorrentes da unidade.</li>
+            <li><strong>prestadores_servico</strong>Cadastro recorrente de prestadores e contatos utilitarios.</li>
+          </ul>
+          <div class="relations">
+            <span class="relation-chip">autorizacoes → eventos</span>
+            <span class="relation-chip">autorizacoes → inbox</span>
+            <span class="relation-chip">autorizacoes → prestador</span>
+            <span class="relation-chip">autorizacoes → funcionario</span>
+          </div>
+        </article>
+
+        <article class="domain olive">
+          <div class="domain-header">
+            <h3>Mobilidade interna</h3>
+            <span class="pill olive">Veiculos e vagas</span>
+          </div>
+          <ul class="entity-list">
+            <li><strong>veiculos</strong>Cadastro por unidade e/ou usuario com placa, status e vaga.</li>
+            <li><strong>vagas_garagem</strong>Inventario de vagas por condominio e unidade.</li>
+            <li><strong>veiculo_marcas / modelos / anos</strong>Catalogo auxiliar automotivo.</li>
+          </ul>
+          <div class="relations">
+            <span class="relation-chip">veiculos → usuarios</span>
+            <span class="relation-chip">veiculos → unidades</span>
+            <span class="relation-chip">veiculos → vagas</span>
+          </div>
+        </article>
+
+        <article class="domain accent">
+          <div class="domain-header">
+            <h3>Areas comuns e reservas</h3>
+            <span class="pill accent">Uso compartilhado</span>
+          </div>
+          <ul class="entity-list">
+            <li><strong>areas_comuns</strong>Cadastro das areas reservaveis e respectivas regras.</li>
+            <li><strong>reservas</strong>Solicitacoes, confirmacao, status financeiro e agenda de uso.</li>
+          </ul>
+          <div class="relations">
+            <span class="relation-chip">condominios → areas</span>
+            <span class="relation-chip">areas → reservas</span>
+            <span class="relation-chip">unidades → reservas</span>
+            <span class="relation-chip">usuarios → reservas</span>
+          </div>
+        </article>
+
+        <article class="domain brand">
+          <div class="domain-header">
+            <h3>Ocorrencias e manutencao</h3>
+            <span class="pill brand">Atendimento</span>
+          </div>
+          <ul class="entity-list">
+            <li><strong>ocorrencias</strong>Registro principal de problema, analise, execucao e conclusao.</li>
+            <li><strong>ocorrencias_eventos</strong>Trilha do atendimento e mudancas de status.</li>
+            <li><strong>ocorrencias_anexos</strong>Imagens e anexos leves para apoio visual.</li>
+          </ul>
+          <div class="relations">
+            <span class="relation-chip">condominios → ocorrencias</span>
+            <span class="relation-chip">unidades → ocorrencias</span>
+            <span class="relation-chip">ocorrencias → eventos</span>
+            <span class="relation-chip">ocorrencias → anexos</span>
+          </div>
+        </article>
+
+        <article class="domain brand">
+          <div class="domain-header">
+            <h3>Mensagens e inbox interno</h3>
+            <span class="pill brand">Comunicacao</span>
+          </div>
+          <ul class="entity-list">
+            <li><strong>mensagens</strong>Mensagem principal com remetente, contexto e entidade relacionada.</li>
+            <li><strong>mensagem_destinatarios</strong>Caixa de entrada, leitura, acao e arquivamento por usuario.</li>
+            <li><strong>mensagem_arquivos</strong>Anexos de imagem, PDF, Word, Excel e outros formatos.</li>
+          </ul>
+          <div class="relations">
+            <span class="relation-chip">mensagens → destinatarios</span>
+            <span class="relation-chip">mensagens → anexos</span>
+            <span class="relation-chip">mensagens ↔ reservas</span>
+          </div>
+        </article>
+
+        <article class="domain olive">
+          <div class="domain-header">
+            <h3>Financeiro de apoio</h3>
+            <span class="pill olive">Em evolucao</span>
+          </div>
+          <ul class="entity-list">
+            <li><strong>lancamentos_financeiros</strong>Base inicial que ainda pode crescer para cobranca e conciliacao.</li>
+            <li><strong>planos</strong>Camada comercial/plataforma para evolucoes futuras.</li>
+          </ul>
+          <div class="relations">
+            <span class="relation-chip">reservas → mensagens financeiras</span>
+            <span class="relation-chip">financeiro real ainda em ampliacao</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>2. Fluxo real da aplicacao</h2>
+          <p>
+            Este e o desenho operacional do produto como ele se comporta no mundo real do condominio.
+            A leitura abaixo parte dos tres perfis centrais: administracao, operacao interna e morador.
+          </p>
+        </div>
+      </div>
+
+      <div class="flow-diagram">
+        <article class="flow-column">
+          <h3>Admin</h3>
+          <ul class="flow-list">
+            <li>Cria condominios, torres, unidades e areas comuns.</li>
+            <li>Gerencia moradores, funcionarios, prestadores e colaboradores.</li>
+            <li>Supervisiona reservas, acessos, ocorrencias e mensagens.</li>
+            <li>Consulta historicos, exporta dados e audita operacoes.</li>
+          </ul>
+          <small>Perfil de governo do ecossistema condominial.</small>
+        </article>
+
+        <article class="flow-column">
+          <h3>Funcionario</h3>
+          <ul class="flow-list">
+            <li>Opera a portaria, a fila de visitantes e entradas espontaneas.</li>
+            <li>Registra entrada, saida, negacao e atendimento por sessao.</li>
+            <li>Recebe mensagens internas e trata ocorrencias conforme area.</li>
+            <li>Atua apenas dentro do condominio do proprio vinculo.</li>
+          </ul>
+          <small>Perfil operacional com trilha de responsabilidade por turno.</small>
+        </article>
+
+        <article class="flow-column">
+          <h3>Morador</h3>
+          <ul class="flow-list">
+            <li>Opera no contexto da propria unidade.</li>
+            <li>Solicita acessos, reservas, mensagens e ocorrencias.</li>
+            <li>Gerencia residentes, colaboradores e lista recorrente do InBox.</li>
+            <li>Consome prestadores utilitarios e comunicacao interna.</li>
+          </ul>
+          <small>Perfil de uso cotidiano com foco em praticidade e mobilidade.</small>
+        </article>
+
+        <article class="flow-column">
+          <h3>Auditoria</h3>
+          <ul class="flow-list">
+            <li>Mensagens ficam ligadas ao contexto do condominio.</li>
+            <li>Acessos guardam quem recebeu, quem atendeu e quem executou.</li>
+            <li>Ocorrencias registram abertura, responsavel, eventos e anexos.</li>
+            <li>Reservas registram pagamento, confirmacao e comunicacao associada.</li>
+          </ul>
+          <small>Camada transversal que transforma evento em historico verificavel.</small>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>3. Jornadas principais do sistema</h2>
+          <p>
+            Aqui esta o mapa mental das rotinas mais importantes do EzView hoje. Cada trilha abaixo representa um
+            fluxo vivo do condominio e ajuda a orientar novas implementacoes sem perder coerencia.
+          </p>
+        </div>
+      </div>
+
+      <div class="timeline">
+        <article class="timeline-card">
+          <h3>Controle de acesso</h3>
+          <div class="timeline-step">
+            <strong>Morador ou portaria inicia</strong>
+            O acesso pode nascer por solicitacao do morador, InBox recorrente, prestador conhecido ou entrada espontanea.
+          </div>
+          <div class="timeline-step">
+            <strong>Fila da portaria</strong>
+            O item entra na fila do condominio e pode ser visto por mais de um porteiro logado no turno.
+          </div>
+          <div class="timeline-step">
+            <strong>Execucao operacional</strong>
+            O funcionario registra entrada, saida, negacao ou tratativa manual.
+          </div>
+          <div class="timeline-step">
+            <strong>Historico</strong>
+            Tudo fica rastreavel em eventos, sessoes e responsaveis.
+          </div>
+        </article>
+
+        <article class="timeline-card">
+          <h3>Reservas e pagamento</h3>
+          <div class="timeline-step">
+            <strong>Morador solicita reserva</strong>
+            A unidade pede uso de uma area comum conforme agenda e regras.
+          </div>
+          <div class="timeline-step">
+            <strong>Status financeiro</strong>
+            Quando houver taxa, o fluxo passa por pagamento pendente, enviado, confirmado ou rejeitado.
+          </div>
+          <div class="timeline-step">
+            <strong>Inbox interno</strong>
+            Morador e admin trocam mensagens operacionais ligadas a reserva.
+          </div>
+          <div class="timeline-step">
+            <strong>Confirmacao final</strong>
+            O admin confirma ou rejeita, preservando o historico da reserva.
+          </div>
+        </article>
+
+        <article class="timeline-card">
+          <h3>Ocorrencias e manutencao</h3>
+          <div class="timeline-step">
+            <strong>Abertura</strong>
+            Morador, admin ou funcionario abre uma ocorrencia com categoria, prioridade e descricao.
+          </div>
+          <div class="timeline-step">
+            <strong>Anexos</strong>
+            O registro pode receber fotos para apontar o problema sem travar o fluxo.
+          </div>
+          <div class="timeline-step">
+            <strong>Atendimento</strong>
+            O item e assumido, movimentado e concluido por funcionario ou administracao.
+          </div>
+          <div class="timeline-step">
+            <strong>Fechamento auditavel</strong>
+            Eventos e anexos permanecem disponiveis para consulta futura.
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>4. Legenda de leitura do produto</h2>
+          <p>
+            Esta visao ajuda a entender como pensar as proximas evolucoes sem desorganizar o sistema.
+          </p>
+        </div>
+      </div>
+
+      <div class="legend">
+        <article class="legend-panel">
+          <h3>Eixos centrais</h3>
+          <div class="tag-row">
+            <span class="tag">Condominio como eixo de isolamento</span>
+            <span class="tag">Usuario como identidade</span>
+            <span class="tag">Unidade como contexto de moradia</span>
+            <span class="tag">Portaria como operacao viva</span>
+            <span class="tag">Mensagens como comunicacao institucional</span>
+            <span class="tag">Ocorrencias como manutencao rastreavel</span>
+            <span class="tag">Reservas como uso compartilhado</span>
+          </div>
+        </article>
+
+        <article class="legend-panel">
+          <h3>Leitura estrategica</h3>
+          <ul class="legend-list">
+            <li>O sistema ja tem espinha dorsal suficiente para crescer em financeiro, servicos premium e integracoes externas.</li>
+            <li>A modelagem esta mais madura quando pensamos por modulo do que por tela isolada.</li>
+            <li>As camadas de auditoria e historico ja sustentam um produto mais profissional e escalavel.</li>
+            <li>A proxima grande fase pode priorizar experiencia do morador em mobile sem perder a robustez operacional.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <p class="footer-note">
+      Documento visual gerado para o projeto EzView. Recomendado abrir em navegador moderno e usar “Imprimir → Salvar como PDF” quando desejar uma versao distribuivel.
+    </p>
+  </div>
+</body>
+</html>

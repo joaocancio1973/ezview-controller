@@ -1,0 +1,188 @@
+﻿<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>EzView Controller</title>
+    <link rel="stylesheet" href="../css/dashboard-super-admin2.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <h2>EzView Controller</h2>
+
+        <ul class="menu">
+          <li data-page="dashboard" class="active">
+            <span class="icon">&#127968;</span>Dashboard
+          </li>
+
+          <li data-page="condominios" data-visible-for="admin">
+            <span class="icon">&#127970;</span>Condom&iacute;nios
+          </li>
+
+          <li data-page="torres" data-visible-for="admin">
+            <span class="icon">&#127959;&#65039;</span>Torres
+          </li>
+
+          <li data-page="unidades" data-visible-for="admin">
+            <span class="icon">&#127970;</span>Unidades
+          </li>
+
+          <li data-page="moradores" data-visible-for="admin">
+            <span class="icon">&#128101;</span>Moradores
+          </li>
+          <li data-page="colaboradores-unidade" data-visible-for="admin,morador">
+            <span class="icon">&#129489;&#8205;&#127806;</span>Colaboradores
+          </li>
+          <li data-page="residentes-unidade" data-visible-for="morador">
+            <span class="icon">&#128100;</span>Residentes
+          </li>
+          <li data-page="inbox-unidade" data-visible-for="admin,morador">
+            <span class="icon">&#128228;</span>InBox
+          </li>
+          <li data-page="mensagens" data-visible-for="admin,morador,funcionario">
+            <span class="icon">&#128231;</span>Mensagens
+          </li>
+
+          <li data-page="funcionarios" data-visible-for="admin">
+            <span class="icon">&#128188;</span>Funcion&aacute;rios
+          </li>
+
+          <li data-page="prestadores-servico" data-visible-for="admin,morador">
+            <span class="icon">&#128736;&#65039;</span>Prestadores
+          </li>
+
+          <li data-page="ocorrencias" data-visible-for="admin,morador,funcionario">
+            <span class="icon">&#9888;&#65039;</span>Ocorrencias
+          </li>
+          <li data-page="manutencoes" data-visible-for="admin,funcionario">
+            <span class="icon">&#128295;</span>Manuten&ccedil;&atilde;o
+          </li>
+
+          <li data-page="areas-comuns" data-visible-for="admin">
+            <span class="icon">&#11088;</span>&Aacute;reas Comuns
+          </li>
+
+          <li data-page="reservas" data-visible-for="admin,morador">
+            <span class="icon">&#128467;&#65039;</span>Reservas
+          </li>
+
+          <li data-page="acessos" data-visible-for="admin,morador,funcionario">
+            <span class="icon">&#128682;</span>Acessos
+          </li>
+          <li data-page="veiculos" data-visible-for="admin">
+            <span class="icon">&#128663;</span>Ve&iacute;culos
+          </li>
+          <li data-page="vagas-garagem" data-visible-for="admin">
+            <span class="icon">&#128739;&#65039;</span>Vagas
+          </li>
+
+          <li data-page="admins" data-visible-for="super_admin">
+            <span class="icon">&#128100;</span>Admins
+          </li>
+
+          <li data-page="usuarios" data-visible-for="super_admin">
+            <span class="icon">&#128101;</span>Usu&aacute;rios
+          </li>
+
+        </ul>
+
+        <div class="sidebar-logout">
+          <button id="logoutBtn">
+            <span class="icon">&#9203;</span>
+            <span>Sair</span>
+          </button>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="header">
+          <div class="welcome">
+            <div class="welcome-avatar" id="userAvatar" aria-hidden="true">EZ</div>
+            <div class="welcome-copy">
+              Bem-vindo, <strong id="userName"></strong>
+              <div class="profile" id="userProfile"></div>
+            </div>
+          </div>
+
+          <div class="header-actions">
+            <button id="profileContextBtn" class="header-profile-btn">Meu perfil</button>
+            <button id="darkModeToggle">&#127769;</button>
+          </div>
+        </header>
+
+        <section class="content">
+          <div class="container">
+            <div id="spaContent"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="confirmModal" class="modal-overlay hidden">
+      <div class="modal">
+        <h3 id="modalTitle">Confirmar acao</h3>
+        <p id="modalMessage">Tem certeza que deseja continuar?</p>
+
+        <div class="modal-actions">
+          <button class="btn-cancel" id="modalCancel">Cancelar</button>
+          <button class="btn-confirm" id="modalConfirm">Confirmar</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/dashboard-super-admin.js?v=20260414-manutencoes1"></script>
+    <script src="../js/manutencoes-module.js?v=20260414-manutencoes1"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const button = document.getElementById("darkModeToggle");
+        if (!button) return;
+
+        const applyTheme = (theme) => {
+          document.body.classList.toggle("light", theme === "light");
+          localStorage.setItem("theme", theme);
+          localStorage.setItem("darkMode", theme === "dark");
+          button.innerHTML = theme === "light" ? "&#9728;&#65039;" : "&#127769;";
+        };
+
+        const savedTheme = localStorage.getItem("theme");
+        applyTheme(savedTheme === "light" ? "light" : "dark");
+
+        button.addEventListener("click", () => {
+          const nextTheme = document.body.classList.contains("light")
+            ? "dark"
+            : "light";
+          setTimeout(() => applyTheme(nextTheme), 0);
+        });
+      });
+    </script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

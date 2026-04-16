@@ -27,6 +27,7 @@ Modulos iniciais:
 - controle de acesso
 - colaboradores da unidade
 - prestadores de servico
+- financeiro e cobrancas
 - ocorrencias e manutencao
 - manutencao e reformas
 - inbox interno

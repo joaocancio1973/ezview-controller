@@ -23,6 +23,7 @@ Dominios iniciais documentados:
 - controle de acesso
 - colaboradores da unidade
 - prestadores de servico
+- financeiro
 - ocorrencias e manutencao
 - manutencoes
 - mensagens

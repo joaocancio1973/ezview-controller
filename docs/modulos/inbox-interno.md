@@ -109,6 +109,7 @@ Quando o admin atualiza a reserva:
 Quando o morador recebe a mensagem de pagamento pendente:
 
 - pode marcar `pagamento enviado` pelo proprio inbox
+- isso deve levar a cobranca para `em_analise` na fase financeira
 
 Quando o admin recebe a demanda financeira da reserva:
 

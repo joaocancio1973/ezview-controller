@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import db from "../config/database.js";
 import { createMensagemInternaService } from "./mensagens.service.js";
+import { syncFinanceiroReservaService } from "./financeiro.service.js";
 
 function normalizeText(value) {
   return typeof value === "string" ? value.trim() : value;
@@ -189,6 +190,8 @@ async function getReservaDetalheParaInbox(reservaId) {
       r.data_inicio,
       r.data_fim,
       r.data_limite_confirmacao,
+      fc.id AS cobranca_id,
+      fc.status AS cobranca_status,
       r.unidade_id,
       u.identificacao AS unidade_identificacao,
       r.usuario_id,
@@ -206,6 +209,7 @@ async function getReservaDetalheParaInbox(reservaId) {
     INNER JOIN condominios c ON c.id = a.condominio_id
     INNER JOIN unidades u ON u.id = r.unidade_id
     INNER JOIN usuarios usr ON usr.id = r.usuario_id
+    LEFT JOIN financeiro_cobrancas fc ON fc.reserva_id = r.id
     WHERE r.id = ?
     LIMIT 1
     `,
@@ -250,6 +254,8 @@ async function notificarReservaCriada(reservaId) {
     admin_id: detalhe.admin_id,
     condominio_id: detalhe.condominio_id,
     usuario_id: detalhe.usuario_id,
+    cobranca_id: detalhe.cobranca_id,
+    cobranca_status: detalhe.cobranca_status,
   };
 
   if (Number(detalhe.exige_taxa) === 1) {
@@ -681,6 +687,10 @@ export async function createReservaService(usuarioLogado, data) {
     ],
   );
 
+  await syncFinanceiroReservaService(novoId, {
+    usuarioId: usuarioLogado?.id || usuarioId,
+    origemAtor: usuarioLogado?.perfil || "sistema",
+  });
   await notificarReservaCriada(novoId);
 
   return {
@@ -767,6 +777,10 @@ export async function updateReservaStatusService(usuarioIdLogado, reservaId, dat
     [novoStatus, statusPagamentoFinal, observacaoPagamento, confirmadoEm, confirmadoPor, id],
   );
 
+  await syncFinanceiroReservaService(id, {
+    usuarioId: usuarioIdLogado,
+    origemAtor: "admin",
+  });
   await notificarReservaAtualizada(id, usuarioIdLogado);
 
   return {

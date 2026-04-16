@@ -207,6 +207,17 @@ Regra recomendada:
 - o morador pode ter apenas visao resumida e contextual quando houver impacto direto ou relacao com ocorrencia propria
 - a governanca da manutencao deve ficar concentrada em `admin`, com execucao controlada por `funcionario`
 
+## Financeiro e cobrancas
+
+- o dominio financeiro deve nascer separado de `reservas`, embora integrado a ele
+- reserva com taxa deve gerar cobranca formal rastreavel
+- `lancamentos_financeiros` legado deve ser preservado enquanto a migracao funcional ocorre
+- status financeiro operacional deve existir em entidade propria de cobranca
+- eventos financeiros devem ser append-only
+- `morador` nao governa cobrancas; ele interage por sinalizacao de pagamento e leitura de retorno
+- `admin` governa confirmacao, rejeicao, isencao e leitura financeira do condominio
+- mensagens do inbox podem atuar como canal operacional da cobranca, mas nao substituem a entidade financeira
+
 ## Residentes da unidade
 
 - somente o `titular` ativo pode agregar novos residentes pela area do morador

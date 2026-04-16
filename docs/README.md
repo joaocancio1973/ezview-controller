@@ -40,6 +40,10 @@ Objetivos desta documentacao:
   - catalogo da API por dominio
 - `modulos/`
   - descricao funcional dos modulos do SaaS
+- `modulos/financeiro-cobrancas.md`
+  - fase 1 do dominio financeiro e de cobrancas operacionais
+- `endpoints/financeiro.md`
+  - desenho inicial dos endpoints administrativos do financeiro
 
 ## Regra de manutencao
 
@@ -76,6 +80,7 @@ Proximo eixo operacional recomendado:
 
 - modulo documentado: colaboradores da unidade
 - modulo documentado: prestadores de servico
+- modulo documentado: financeiro e cobrancas
 - modulo documentado: ocorrencias e manutencao
 - modulo documentado: manutencao e reformas
 - modulo documentado: inbox interno

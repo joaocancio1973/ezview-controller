@@ -3,6 +3,7 @@ import db from "../config/database.js";
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
+import { registrarPagamentoSinalizadoPorMensagemService } from "./financeiro.service.js";
 
 const TIPOS_MENSAGEM = new Set(["mensagem", "aviso", "comunicado", "financeiro", "sistema"]);
 const PRIORIDADES = new Set(["baixa", "media", "alta", "urgente"]);
@@ -705,6 +706,17 @@ export async function registrarAcaoMensagemService(usuario, mensagemId, { status
     `,
     [normalized, detalhe.mensagem.destinatario_relacao_id],
   );
+
+  if (
+    detalhe.mensagem.tipo === "financeiro"
+    && detalhe.mensagem.categoria_evento === "reserva_pagamento_pendente"
+    && normalized === "acionado"
+  ) {
+    await registrarPagamentoSinalizadoPorMensagemService({
+      usuario,
+      mensagem: detalhe.mensagem,
+    });
+  }
 
   return { sucesso: true };
 }

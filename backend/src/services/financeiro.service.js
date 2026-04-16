@@ -319,6 +319,12 @@ function normalizeStatusFinanceiro(value) {
   return validos.has(normalized) ? normalized : null;
 }
 
+function normalizePositiveInt(value, fallback, min = 1, max = 200) {
+  const parsed = Number.parseInt(value, 10);
+  if (Number.isNaN(parsed)) return fallback;
+  return Math.min(Math.max(parsed, min), max);
+}
+
 export async function listFinanceiroCobrancasService(usuario, filtros = {}) {
   if (usuario?.perfil !== "admin") {
     const error = new Error("Apenas admin pode acessar cobrancas");
@@ -337,6 +343,10 @@ export async function listFinanceiroCobrancasService(usuario, filtros = {}) {
   const unidadeId = normalizeText(filtros.unidade_id);
   const vencimentoDe = normalizeText(filtros.vencimento_de);
   const vencimentoAte = normalizeText(filtros.vencimento_ate);
+  const busca = normalizeText(filtros.busca);
+  const pagina = normalizePositiveInt(filtros.pagina, 1, 1, 100000);
+  const limite = normalizePositiveInt(filtros.limite, 25, 5, 200);
+  const offset = (pagina - 1) * limite;
 
   const params = [];
   let where = ` WHERE fc.condominio_id IN (${condominioIds.map(() => "?").join(",")}) `;
@@ -371,6 +381,59 @@ export async function listFinanceiroCobrancasService(usuario, filtros = {}) {
     where += " AND DATE(fc.vencimento_em) <= ? ";
     params.push(vencimentoAte);
   }
+
+  if (busca) {
+    where += `
+      AND (
+        fc.referencia_titulo LIKE ?
+        OR u.identificacao LIKE ?
+        OR usr.nome_completo LIKE ?
+        OR c.nome_fantasia LIKE ?
+      )
+    `;
+    const buscaLike = `%${busca}%`;
+    params.push(buscaLike, buscaLike, buscaLike, buscaLike);
+  }
+
+  const [countRows] = await db.query(
+    `
+    SELECT COUNT(*) AS total
+    FROM financeiro_cobrancas fc
+    INNER JOIN condominios c ON c.id = fc.condominio_id
+    INNER JOIN unidades u ON u.id = fc.unidade_id
+    INNER JOIN usuarios usr ON usr.id = fc.usuario_id
+    ${where}
+    `,
+    params,
+  );
+
+  const totalRegistros = Number(countRows[0]?.total || 0);
+  const totalPaginas = totalRegistros > 0 ? Math.ceil(totalRegistros / limite) : 1;
+  const [resumoRows] = await db.query(
+    `
+    SELECT
+      COUNT(*) AS total,
+      COALESCE(SUM(fc.valor), 0) AS valor_total,
+      SUM(CASE WHEN fc.status = 'pendente' THEN 1 ELSE 0 END) AS pendentes,
+      SUM(CASE WHEN fc.status = 'em_analise' THEN 1 ELSE 0 END) AS em_analise,
+      SUM(CASE WHEN fc.status = 'pago' THEN 1 ELSE 0 END) AS pagas,
+      SUM(
+        CASE
+          WHEN fc.vencimento_em IS NOT NULL
+            AND fc.status IN ('pendente', 'em_analise', 'rejeitado')
+            AND fc.vencimento_em < NOW()
+          THEN 1
+          ELSE 0
+        END
+      ) AS vencidas
+    FROM financeiro_cobrancas fc
+    INNER JOIN condominios c ON c.id = fc.condominio_id
+    INNER JOIN unidades u ON u.id = fc.unidade_id
+    INNER JOIN usuarios usr ON usr.id = fc.usuario_id
+    ${where}
+    `,
+    params,
+  );
 
   const [rows] = await db.query(
     `
@@ -408,27 +471,32 @@ export async function listFinanceiroCobrancasService(usuario, filtros = {}) {
       END,
       fc.vencimento_em ASC,
       fc.criado_em DESC
+    LIMIT ?
+    OFFSET ?
     `,
-    params,
+    [...params, limite, offset],
   );
+  const resumo = {
+    total: Number(resumoRows[0]?.total || 0),
+    pendentes: Number(resumoRows[0]?.pendentes || 0),
+    em_analise: Number(resumoRows[0]?.em_analise || 0),
+    pagas: Number(resumoRows[0]?.pagas || 0),
+    vencidas: Number(resumoRows[0]?.vencidas || 0),
+    valor_total: Number(resumoRows[0]?.valor_total || 0),
+  };
 
-  const agora = new Date();
-  const resumo = rows.reduce(
-    (acc, item) => {
-      acc.total += 1;
-      acc.valor_total += Number(item.valor || 0);
-      if (item.status === "pendente") acc.pendentes += 1;
-      if (item.status === "em_analise") acc.em_analise += 1;
-      if (item.status === "pago") acc.pagas += 1;
-      if (item.vencimento_em && ["pendente", "em_analise", "rejeitado"].includes(item.status) && new Date(item.vencimento_em) < agora) {
-        acc.vencidas += 1;
-      }
-      return acc;
+  return {
+    cobrancas: rows,
+    resumo,
+    paginacao: {
+      pagina_atual: pagina,
+      limite,
+      total_registros: totalRegistros,
+      total_paginas: totalPaginas,
+      possui_anterior: pagina > 1,
+      possui_proxima: pagina < totalPaginas,
     },
-    { total: 0, pendentes: 0, em_analise: 0, pagas: 0, vencidas: 0, valor_total: 0 },
-  );
-
-  return { cobrancas: rows, resumo };
+  };
 }
 
 export async function getFinanceiroCobrancaDetalheService(usuario, cobrancaId) {

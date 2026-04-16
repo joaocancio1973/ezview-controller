@@ -19,6 +19,9 @@ Lista cobrancas do contexto do `admin`.
 - `usuario_id`
 - `vencimento_de`
 - `vencimento_ate`
+- `busca`
+- `pagina`
+- `limite`
 
 ## GET `/financeiro/cobrancas/:id`
 
@@ -69,3 +72,15 @@ Na fase atual, o `admin` ja possui tela propria de leitura financeira, consumind
 
 - `GET /financeiro/cobrancas`
 - `GET /financeiro/cobrancas/:id`
+
+### Parametros ja ativos em `GET /financeiro/cobrancas`
+
+- `condominio_id`
+- `status`
+- `origem`
+- `unidade_id`
+- `vencimento_de`
+- `vencimento_ate`
+- `busca`
+- `pagina`
+- `limite`

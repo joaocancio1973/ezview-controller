@@ -127,9 +127,17 @@ Ele entrega:
   - status
   - origem
   - vencimento
+- busca textual por:
+  - referencia
+  - unidade
+  - morador
+  - condominio
+- quantidade por pagina
+- paginacao da grade administrativa
 - tabela compacta de cobrancas
 - detalhe da cobranca
 - historico financeiro append-only
+- relatorio de impressao e exportacao simples para PDF pelo navegador
 
 ## Evolucao recomendada
 

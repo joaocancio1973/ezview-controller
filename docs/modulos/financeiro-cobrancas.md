@@ -144,9 +144,14 @@ Ele entrega:
 ### Fase 2
 
 - `financeiro_anexos`
+- `financeiro_gateway_contas`
+- `financeiro_webhook_logs`
+- `financeiro_notificacoes`
 - comprovantes vinculados diretamente a cobrancas
 - tela administrativa de cobrancas
 - filtros por condominio, status, vencimento e origem
+- arquitetura oficial de boletos definida em:
+  - `financeiro-boletos-arquitetura.md`
 
 ### Fase 3
 

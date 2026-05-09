@@ -53,6 +53,37 @@ Lista o historico append-only da cobranca.
 
 Previsto para fase seguinte, quando `financeiro_anexos` entrar.
 
+## POST `/financeiro/gateway/contas`
+
+Previsto para registrar ou vincular a conta financeira oficial do condominio no gateway.
+
+## POST `/financeiro/cobrancas/:id/emitir-boleto`
+
+Previsto para emissao oficial da cobranca no gateway, com retorno de:
+
+- `gateway_charge_id`
+- `linha_digitavel`
+- `boleto_url`
+- `boleto_pdf_url`
+
+## POST `/financeiro/cobrancas/:id/segunda-via`
+
+Previsto para gerar nova via, com rastreabilidade da cobranca anterior.
+
+## POST `/financeiro/webhooks/:gateway`
+
+Endpoint tecnico previsto para recepcao de eventos do gateway.
+
+Regras:
+
+- persistir payload bruto
+- processar com idempotencia
+- atualizar cobranca local apenas apos validacao
+
+## POST `/financeiro/lotes/taxa-condominial`
+
+Previsto para geracao em lote de cobrancas mensais por unidade ativa.
+
 ## Integracao atual ja ativa
 
 Mesmo antes dos endpoints administrativos, a fase 1 ja integra:
@@ -84,3 +115,9 @@ Na fase atual, o `admin` ja possui tela propria de leitura financeira, consumind
 - `busca`
 - `pagina`
 - `limite`
+
+## Observacao arquitetural
+
+A arquitetura oficial de boletos do `EzView` esta documentada em:
+
+- `docs/modulos/financeiro-boletos-arquitetura.md`

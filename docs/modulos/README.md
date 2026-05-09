@@ -28,6 +28,7 @@ Modulos iniciais:
 - colaboradores da unidade
 - prestadores de servico
 - financeiro e cobrancas
+- arquitetura de boletos
 - ocorrencias e manutencao
 - manutencao e reformas
 - inbox interno

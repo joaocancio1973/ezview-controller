@@ -20,6 +20,10 @@ Objetivos desta documentacao:
   - organograma visual dos modulos, banco relacional e fluxo real da aplicacao
 - `mapa-visual-ezview.md`
   - atalho textual para a versao visual em HTML
+- `visao-fase2-ecossistema-ezview.html`
+  - visao aspiracional e comercial da fase 2 do EzView como ecossistema de servicos
+- `visao-fase2-ecossistema-ezview.md`
+  - atalho textual para a versao visual da fase 2
 - `relatorio-comercial-ezview.html`
   - relatorio executivo comercial do produto para leitura externa e PDF
 - `relatorio-comercial-ezview.md`
@@ -42,6 +46,8 @@ Objetivos desta documentacao:
   - descricao funcional dos modulos do SaaS
 - `modulos/financeiro-cobrancas.md`
   - fase 1 do dominio financeiro e de cobrancas operacionais
+- `modulos/financeiro-boletos-arquitetura.md`
+  - arquitetura oficial do financeiro com boletos, webhook e notificacao automatica
 - `endpoints/financeiro.md`
   - desenho inicial dos endpoints administrativos do financeiro
 

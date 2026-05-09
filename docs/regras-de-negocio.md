@@ -217,6 +217,24 @@ Regra recomendada:
 - `morador` nao governa cobrancas; ele interage por sinalizacao de pagamento e leitura de retorno
 - `admin` governa confirmacao, rejeicao, isencao e leitura financeira do condominio
 - mensagens do inbox podem atuar como canal operacional da cobranca, mas nao substituem a entidade financeira
+- boleto deve ser tratado como cobranca oficial, nao apenas como arquivo ou comprovante isolado
+- o modelo recomendado para producao e conta propria ou subconta por condominio no gateway
+- integracao com gateway deve nascer por camada de abstracao, evitando acoplamento excessivo a um unico provedor
+- webhook e a fonte primaria de sincronizacao de status de pagamento no sistema
+- todo webhook financeiro deve ser persistido e processado com idempotencia
+- o `EzView` deve manter comunicacao propria com o morador por inbox e email, mesmo quando o gateway tambem notificar
+- cobrancas de teste ou de moradores apenas usados para exercicio do sistema nao devem entrar automaticamente em fluxo de producao
+- a cobranca oficial exige dados minimos consistentes do pagador:
+  - nome
+  - CPF ou CNPJ
+  - email
+  - telefone
+  - endereco
+  - numero
+  - bairro
+  - CEP
+- segunda via deve preservar rastreabilidade da cobranca original
+- ativacao financeira em producao deve ser controlada por condominio
 
 ## Residentes da unidade
 

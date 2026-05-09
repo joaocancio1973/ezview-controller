@@ -41,6 +41,12 @@ Essa entidade existe para responder:
 
 Sem esses dados, o sistema nao deve emitir boleto oficial.
 
+Observacao importante:
+
+- obrigatorio para producao nao significa necessariamente `NOT NULL` na primeira migracao
+- durante a fase de transicao e saneamento, esses campos podem existir incompletos no banco
+- a barreira oficial deve ser a validacao de elegibilidade financeira antes da emissao
+
 - `tipo_pagador`
 - `nome_completo`
 - `cpf_cnpj`
@@ -278,6 +284,7 @@ Quando a unidade trocar de responsavel financeiro:
 Para um responsavel financeiro estar apto a producao:
 
 - `ativo = 1`
+- `ativo_para_cobranca = 1`
 - `recebe_cobranca = 1`
 - `ambiente_financeiro = producao`
 - dados minimos completos

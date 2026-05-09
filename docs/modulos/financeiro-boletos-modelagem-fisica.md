@@ -23,6 +23,16 @@ Esta proposta foi desenhada para suportar:
 - segunda via
 - conciliacao por webhook
 
+## Diretriz de transicao
+
+Como a base atual ainda esta em fase embrionaria para moradores e pagadores reais, a primeira migracao oficial do banco deve priorizar seguranca operacional.
+
+Isso significa:
+
+- campos obrigatorios para producao podem nascer `NULL` no banco durante a transicao
+- defaults de cobranca devem nascer bloqueados para producao acidental
+- a elegibilidade oficial continua sendo garantida pelo backend antes da emissao
+
 ## Tabela nova - `unidades_responsaveis_financeiros`
 
 ### Finalidade
@@ -39,23 +49,23 @@ CREATE TABLE unidades_responsaveis_financeiros (
   usuario_id CHAR(36) NOT NULL,
 
   tipo_pagador ENUM('pf','pj') NOT NULL DEFAULT 'pf',
-  nome_completo VARCHAR(160) NOT NULL,
-  cpf_cnpj VARCHAR(20) NOT NULL,
-  email VARCHAR(160) NOT NULL,
-  telefone_principal VARCHAR(30) NOT NULL,
+  nome_completo VARCHAR(160) NULL,
+  cpf_cnpj VARCHAR(20) NULL,
+  email VARCHAR(160) NULL,
+  telefone_principal VARCHAR(30) NULL,
   telefone_whatsapp VARCHAR(30) NULL,
 
-  cep VARCHAR(12) NOT NULL,
-  logradouro VARCHAR(160) NOT NULL,
-  numero VARCHAR(30) NOT NULL,
+  cep VARCHAR(12) NULL,
+  logradouro VARCHAR(160) NULL,
+  numero VARCHAR(30) NULL,
   complemento VARCHAR(120) NULL,
-  bairro VARCHAR(120) NOT NULL,
-  cidade VARCHAR(120) NOT NULL,
-  uf CHAR(2) NOT NULL,
+  bairro VARCHAR(120) NULL,
+  cidade VARCHAR(120) NULL,
+  uf CHAR(2) NULL,
 
   ativo TINYINT(1) NOT NULL DEFAULT 1,
-  ativo_para_cobranca TINYINT(1) NOT NULL DEFAULT 1,
-  recebe_cobranca TINYINT(1) NOT NULL DEFAULT 1,
+  ativo_para_cobranca TINYINT(1) NOT NULL DEFAULT 0,
+  recebe_cobranca TINYINT(1) NOT NULL DEFAULT 0,
   preferencia_envio ENUM('email','inbox','email_e_inbox') NOT NULL DEFAULT 'email_e_inbox',
   ambiente_financeiro ENUM('teste','producao') NOT NULL DEFAULT 'teste',
 

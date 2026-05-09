@@ -315,7 +315,7 @@ function normalizeOrigemFinanceira(value) {
 
 function normalizeStatusFinanceiro(value) {
   const normalized = normalizeText(value);
-  const validos = new Set(["rascunho", "pendente", "em_analise", "pago", "isento", "cancelado", "rejeitado"]);
+  const validos = new Set(["rascunho", "pendente", "emitido", "em_analise", "pago", "isento", "cancelado", "rejeitado", "vencido"]);
   return validos.has(normalized) ? normalized : null;
 }
 
@@ -420,7 +420,7 @@ export async function listFinanceiroCobrancasService(usuario, filtros = {}) {
       SUM(
         CASE
           WHEN fc.vencimento_em IS NOT NULL
-            AND fc.status IN ('pendente', 'em_analise', 'rejeitado')
+            AND fc.status IN ('pendente', 'emitido', 'em_analise', 'rejeitado')
             AND fc.vencimento_em < NOW()
           THEN 1
           ELSE 0
@@ -465,7 +465,7 @@ export async function listFinanceiroCobrancasService(usuario, filtros = {}) {
     ${where}
     ORDER BY
       CASE
-        WHEN fc.status IN ('pendente', 'em_analise', 'rejeitado') THEN 0
+        WHEN fc.status IN ('pendente', 'emitido', 'em_analise', 'rejeitado', 'vencido') THEN 0
         WHEN fc.status IN ('pago', 'isento') THEN 1
         ELSE 2
       END,

@@ -84,6 +84,22 @@ async function hasConstraint(table, constraintName) {
   return rows.length > 0;
 }
 
+async function getForeignKeyDeleteRule(table, constraintName) {
+  const [rows] = await db.query(
+    `
+    SELECT rc.DELETE_RULE AS delete_rule
+    FROM information_schema.referential_constraints rc
+    WHERE rc.constraint_schema = DATABASE()
+      AND rc.table_name = ?
+      AND rc.constraint_name = ?
+    LIMIT 1
+    `,
+    [table, constraintName],
+  );
+
+  return rows[0]?.delete_rule || null;
+}
+
 async function addIndexIfMissing(table, indexName, sql) {
   if (await hasIndex(table, indexName)) return;
   await db.query(sql);
@@ -427,8 +443,57 @@ async function backfillResponsaveisFinanceiros() {
       ON urf.condominio_id = base.condominio_id
      AND urf.unidade_id = base.unidade_id
      AND urf.usuario_id = base.usuario_id
-     AND urf.ativo = 1
     WHERE urf.id IS NULL
+  `);
+
+  await db.query(`
+    UPDATE unidades_responsaveis_financeiros
+    SET ativo = 0
+    WHERE unidade_id IN (
+      SELECT unidade_id
+      FROM (
+        SELECT unidade_id
+        FROM unidades_responsaveis_financeiros
+        GROUP BY unidade_id
+        HAVING SUM(CASE WHEN ativo = 1 THEN 1 ELSE 0 END) = 0
+      ) sem_ativo
+    )
+  `);
+
+  await db.query(`
+    UPDATE unidades_responsaveis_financeiros urf
+    INNER JOIN (
+      SELECT
+        base.unidade_id,
+        COALESCE(
+          (
+            SELECT uu.usuario_id
+            FROM unidade_usuarios uu
+            WHERE uu.unidade_id = base.unidade_id
+              AND uu.ativo = 1
+            ORDER BY FIELD(uu.papel, 'titular', 'proprietario', 'dependente'), uu.criado_em ASC
+            LIMIT 1
+          ),
+          (
+            SELECT fc2.usuario_id
+            FROM financeiro_cobrancas fc2
+            WHERE fc2.unidade_id = base.unidade_id
+              AND fc2.usuario_id IS NOT NULL
+            ORDER BY COALESCE(fc2.atualizado_em, fc2.criado_em) DESC, fc2.criado_em DESC
+            LIMIT 1
+          )
+        ) AS usuario_id_preferencial
+      FROM (
+        SELECT unidade_id
+        FROM unidades_responsaveis_financeiros
+        GROUP BY unidade_id
+        HAVING SUM(CASE WHEN ativo = 1 THEN 1 ELSE 0 END) = 0
+      ) base
+    ) preferencial
+      ON preferencial.unidade_id = urf.unidade_id
+     AND preferencial.usuario_id_preferencial = urf.usuario_id
+    SET urf.ativo = 1
+    WHERE urf.ativo = 0
   `);
 
   await db.query(`
@@ -437,13 +502,26 @@ async function backfillResponsaveisFinanceiros() {
       ON urf.condominio_id = fc.condominio_id
      AND urf.unidade_id = fc.unidade_id
      AND urf.usuario_id = fc.usuario_id
-     AND urf.ativo = 1
     SET fc.responsavel_financeiro_id = urf.id
     WHERE fc.responsavel_financeiro_id IS NULL
   `);
 }
 
 async function ensureFinanceiroConstraints() {
+  const usuarioDeleteRule = await getForeignKeyDeleteRule("financeiro_cobrancas", "fk_financeiro_cobranca_usuario");
+  if (usuarioDeleteRule === "CASCADE") {
+    await db.query(`
+      ALTER TABLE financeiro_cobrancas
+      DROP FOREIGN KEY fk_financeiro_cobranca_usuario
+    `);
+
+    await db.query(`
+      ALTER TABLE financeiro_cobrancas
+      ADD CONSTRAINT fk_financeiro_cobranca_usuario
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE RESTRICT
+    `);
+  }
+
   await addConstraintIfMissing(
     "financeiro_cobrancas",
     "fk_financeiro_cobranca_responsavel_financeiro",

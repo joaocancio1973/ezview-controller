@@ -23,6 +23,18 @@ Lista cobrancas do contexto do `admin`.
 - `pagina`
 - `limite`
 
+### Estados que a listagem deve reconhecer
+
+- `rascunho`
+- `pendente`
+- `emitido`
+- `em_analise`
+- `pago`
+- `isento`
+- `cancelado`
+- `rejeitado`
+- `vencido`
+
 ## GET `/financeiro/cobrancas/:id`
 
 Retorna:
@@ -121,3 +133,13 @@ Na fase atual, o `admin` ja possui tela propria de leitura financeira, consumind
 A arquitetura oficial de boletos do `EzView` esta documentada em:
 
 - `docs/modulos/financeiro-boletos-arquitetura.md`
+
+## Observacao de fase atual
+
+A base do banco ja foi preparada para a fase 2 do financeiro com boletos:
+
+- `responsavel_financeiro_id`
+- dados de gateway em `financeiro_cobrancas`
+- tabelas de contas, webhook e notificacoes
+
+O proximo passo funcional e adaptar o backend e os endpoints para governar oficialmente esses campos e estados no fluxo de emissao.

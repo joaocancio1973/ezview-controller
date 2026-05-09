@@ -72,6 +72,18 @@ git config core.hooksPath .githooks
 git config commit.template .gitmessage.txt
 ```
 
+## Compatibilidade Windows
+
+O bootstrap do hook `pre-commit` foi ajustado para ambiente Windows, evitando dependencia de `env + bash` no cabecalho do arquivo.
+
+Diretriz atual:
+
+- o hook inicia com `sh` simples
+- o executor real continua sendo o PowerShell
+- o checklist local segue centralizado em `scripts/git-check.ps1`
+
+Com isso, o fluxo de commit volta a funcionar normalmente no Windows sem depender de `--no-verify`.
+
 ## Resultado esperado
 
 Com isso, o projeto passa a ter:

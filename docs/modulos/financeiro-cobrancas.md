@@ -143,15 +143,41 @@ Ele entrega:
 
 ### Fase 2
 
-- `financeiro_anexos`
 - `financeiro_gateway_contas`
 - `financeiro_webhook_logs`
 - `financeiro_notificacoes`
-- comprovantes vinculados diretamente a cobrancas
-- tela administrativa de cobrancas
-- filtros por condominio, status, vencimento e origem
+- `unidades_responsaveis_financeiros`
+- ampliacao de `financeiro_cobrancas`
+- ampliacao de `financeiro_eventos`
+- vinculacao por `responsavel_financeiro_id`
+- comprovantes vinculados diretamente a cobrancas, em fase posterior
 - arquitetura oficial de boletos definida em:
   - `financeiro-boletos-arquitetura.md`
+  - `financeiro-boletos-plano-implementacao.md`
+  - `financeiro-boletos-checklist-execucao.md`
+  - `financeiro-boletos-modelagem-fisica.md`
+  - `financeiro-pagador-e-responsabilidade.md`
+
+### Estado atual da fase 2
+
+A base local do projeto ja recebeu a migracao estrutural da fase 2:
+
+- tabela `financeiro_gateway_contas`
+- tabela `unidades_responsaveis_financeiros`
+- tabela `financeiro_webhook_logs`
+- tabela `financeiro_notificacoes`
+- novos campos de boleto em `financeiro_cobrancas`
+- novos estados financeiros preparados:
+  - `emitido`
+  - `vencido`
+
+Observacao importante:
+
+- a migracao nasce em modo seguro
+- o backfill cria responsavel financeiro com:
+  - `ativo_para_cobranca = 0`
+  - `recebe_cobranca = 0`
+- isso prepara a base sem habilitar cobranca real por acidente
 
 ### Fase 3
 

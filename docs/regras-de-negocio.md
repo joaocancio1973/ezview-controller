@@ -224,15 +224,28 @@ Regra recomendada:
 - todo webhook financeiro deve ser persistido e processado com idempotencia
 - o `EzView` deve manter comunicacao propria com o morador por inbox e email, mesmo quando o gateway tambem notificar
 - cobrancas de teste ou de moradores apenas usados para exercicio do sistema nao devem entrar automaticamente em fluxo de producao
+- a unidade e o centro financeiro do condominio
+- o pagador oficial deve ser tratado como responsavel financeiro da unidade, e nao apenas como morador solto
+- deve existir apenas um responsavel financeiro ativo por unidade em cada momento
+- cobrancas emitidas devem apontar para o registro de responsabilidade financeira vigente na epoca da emissao
 - a cobranca oficial exige dados minimos consistentes do pagador:
-  - nome
-  - CPF ou CNPJ
-  - email
-  - telefone
-  - endereco
-  - numero
-  - bairro
-  - CEP
+  - `tipo_pagador`
+  - `nome_completo`
+  - `cpf_cnpj`
+  - `email`
+  - `telefone_principal`
+  - `logradouro`
+  - `numero`
+  - `bairro`
+  - `cidade`
+  - `uf`
+  - `cep`
+- alteracao de responsavel financeiro nao pode quebrar historico de cobrancas ja emitidas
+- emissao de cobranca deve preservar atomicidade local entre:
+  - cobranca
+  - responsavel_financeiro_id
+  - evento financeiro
+  - tentativa de emissao
 - segunda via deve preservar rastreabilidade da cobranca original
 - ativacao financeira em producao deve ser controlada por condominio
 

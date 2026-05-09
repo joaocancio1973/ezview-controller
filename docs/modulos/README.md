@@ -29,6 +29,10 @@ Modulos iniciais:
 - prestadores de servico
 - financeiro e cobrancas
 - arquitetura de boletos
+- plano de implementacao de boletos
+- checklist tecnico de execucao de boletos
+- pagador e responsabilidade financeira da unidade
+- modelagem fisica de boletos
 - ocorrencias e manutencao
 - manutencao e reformas
 - inbox interno

@@ -92,9 +92,9 @@ O sistema nao deve nascer acoplado demais a um unico provedor.
 - adaptador de gateway
 - notificacao e mensageria
 
-### Provedor inicial sugerido
+### Provedor inicial oficial
 
-Para a fase 1 de integracao oficial, o primeiro provedor sugerido e o `Asaas`, por ja oferecer com documentacao oficial:
+Para a fase 1 de integracao oficial, o primeiro gateway oficialmente escolhido para o `EzView` e o `Asaas`, por ja oferecer com documentacao oficial:
 
 - cadastro de cliente
 - criacao de cobranca por boleto
@@ -103,6 +103,12 @@ Para a fase 1 de integracao oficial, o primeiro provedor sugerido e o `Asaas`, p
 - webhooks
 - notificacoes por cliente
 - subcontas
+
+### Observacoes importantes sobre a escolha
+
+- a operacao com subcontas no Asaas exige atencao ao periodo de avaliacao regulatoria
+- a criacao de subcontas e a emissao adicional de cobrancas podem ficar sujeitas a limites ate a conclusao dessa etapa
+- o onboarding financeiro do condominio deve nascer preparado para esse contexto
 
 ## Camadas da arquitetura
 
@@ -148,15 +154,31 @@ Responsavel por:
 
 ### Complementares recomendadas
 
+- `unidades_responsaveis_financeiros`
 - `financeiro_gateway_contas`
 - `financeiro_webhook_logs`
 - `financeiro_notificacoes`
 - `financeiro_anexos`
 
+## Eixo financeiro da unidade
+
+No desenho oficial do `EzView`, a cobranca nasce no contexto da unidade.
+
+Isso significa:
+
+- a unidade e o centro financeiro
+- o pagador e um responsavel financeiro formal da unidade
+- a cobranca deve apontar para esse registro de responsabilidade, e nao apenas para um morador solto
+
+Documento complementar:
+
+- `financeiro-pagador-e-responsabilidade.md`
+
 ## Campos obrigatorios para cobranca oficial com boleto
 
 Em `financeiro_cobrancas`, a cobranca deve estar preparada para armazenar:
 
+- `responsavel_financeiro_id`
 - `gateway`
 - `gateway_conta_id`
 - `gateway_customer_id`
@@ -185,16 +207,32 @@ Para emissao oficial de boleto, o pagador precisa ter dados consistentes.
 
 Campos minimos recomendados:
 
-- nome completo
-- CPF ou CNPJ
-- email
-- telefone ou celular
-- endereco
-- numero
-- bairro
-- CEP
+- `tipo_pagador`
+- `nome_completo`
+- `cpf_cnpj`
+- `email`
+- `telefone_principal`
+- `cep`
+- `logradouro`
+- `numero`
+- `bairro`
+- `cidade`
+- `uf`
 
 Sem esses dados, a cobranca nao deve ser enviada para producao.
+
+## Responsavel financeiro da unidade
+
+O sistema deve reconhecer a entidade:
+
+- `responsavel_financeiro_da_unidade`
+
+Funcoes dessa entidade:
+
+- representar quem recebe a cobranca
+- representar quem e o pagador principal
+- congelar o contexto financeiro relevante da unidade
+- preservar historico quando houver troca de titular ou de pagador
 
 ## Estados oficiais da cobranca
 
@@ -219,18 +257,19 @@ Observacao:
 
 1. a reserva com taxa e criada
 2. nasce a cobranca em `financeiro_cobrancas`
-3. o adaptador do gateway cria cliente ou reutiliza cliente existente
-4. o adaptador cria a cobranca boleto
-5. o sistema salva:
+3. o sistema vincula `responsavel_financeiro_id`
+4. o adaptador do gateway cria cliente ou reutiliza cliente existente
+5. o adaptador cria a cobranca boleto
+6. o sistema salva:
    - id do cliente no gateway
    - id da cobranca no gateway
    - linha digitavel
    - URL do boleto
    - URL/PDF do boleto
-6. o `EzView` registra evento financeiro
-7. o `EzView` envia notificacoes
-8. o webhook do gateway atualiza a cobranca quando houver mudanca
-9. a reserva sincroniza apenas o necessario com o financeiro
+7. o `EzView` registra evento financeiro
+8. o `EzView` envia notificacoes
+9. o webhook do gateway atualiza a cobranca quando houver mudanca
+10. a reserva sincroniza apenas o necessario com o financeiro
 
 ## Fluxo oficial - taxa condominial
 
@@ -296,12 +335,24 @@ Comportamento recomendado:
 
 ## Ambiente e governanca
 
-### Ambientes
+### Ambientes internos do `EzView`
+
+Devem existir:
+
+- `teste`
+- `producao`
+
+### Ambientes do gateway
 
 Devem existir:
 
 - `sandbox`
 - `production`
+
+Regra de nomenclatura:
+
+- no dominio interno do `EzView`, usar `teste` e `producao`
+- no contexto tecnico do gateway, usar `sandbox` e `production`
 
 ### Regra por condominio
 

@@ -48,6 +48,14 @@ Objetivos desta documentacao:
   - fase 1 do dominio financeiro e de cobrancas operacionais
 - `modulos/financeiro-boletos-arquitetura.md`
   - arquitetura oficial do financeiro com boletos, webhook e notificacao automatica
+- `modulos/financeiro-boletos-plano-implementacao.md`
+  - plano por etapas para sair da arquitetura e chegar a uma integracao real
+- `modulos/financeiro-boletos-checklist-execucao.md`
+  - checklist tecnico do que precisa ser feito e validado antes de producao
+- `modulos/financeiro-pagador-e-responsabilidade.md`
+  - decisao funcional do pagador, da unidade como eixo financeiro e da responsabilidade financeira formal
+- `modulos/financeiro-boletos-modelagem-fisica.md`
+  - proposta de tabelas, indices, constraints e integridade para boleto oficial
 - `endpoints/financeiro.md`
   - desenho inicial dos endpoints administrativos do financeiro
 

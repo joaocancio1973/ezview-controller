@@ -1,11 +1,13 @@
 const STATUS_FINANCEIRO_LABELS = {
   rascunho: "Rascunho",
   pendente: "Pendente",
+  emitido: "Emitido",
   em_analise: "Em analise",
   pago: "Pago",
   isento: "Isento",
   cancelado: "Cancelado",
   rejeitado: "Rejeitado",
+  vencido: "Vencido",
 };
 
 const ORIGEM_FINANCEIRO_LABELS = {
@@ -18,6 +20,7 @@ const ORIGEM_FINANCEIRO_LABELS = {
 
 const financeiroState = {
   cobrancas: [],
+  responsaveis: [],
   resumo: {},
   paginacao: {
     pagina_atual: 1,
@@ -40,10 +43,27 @@ function formatarOrigemFinanceira(origem) {
 function buildStatusFinanceiroBadge(status) {
   const classe =
     status === "pago" || status === "isento" ? "status-ativo" :
-    status === "cancelado" || status === "rejeitado" ? "status-inativo" :
+    status === "cancelado" || status === "rejeitado" || status === "vencido" ? "status-inativo" :
     "status-pendente";
 
   return `<span class="status-badge ${classe}">${formatarStatusFinanceiro(status)}</span>`;
+}
+
+function formatarSituacaoResponsavelFinanceiro(situacao) {
+  const mapa = {
+    elegivel: "Elegivel",
+    pendente: "Pendente",
+    nao_configurado: "Nao configurado",
+  };
+  return mapa[situacao] || "Pendente";
+}
+
+function buildSituacaoResponsavelBadge(situacao) {
+  const classe =
+    situacao === "elegivel" ? "status-ativo" :
+    situacao === "nao_configurado" ? "status-inativo" :
+    "status-pendente";
+  return `<span class="status-badge ${classe}">${formatarSituacaoResponsavelFinanceiro(situacao)}</span>`;
 }
 
 function formatarValorFinanceiro(value) {
@@ -110,6 +130,57 @@ async function buscarDetalheCobrancaFinanceira(id) {
   }
 
   return payload;
+}
+
+async function buscarResponsaveisFinanceiros(condominioId, busca = "") {
+  const query = new URLSearchParams();
+  if (condominioId) query.set("condominio_id", condominioId);
+  if (busca) query.set("busca", busca);
+
+  const response = await fetch(`http://localhost:3000/financeiro/responsaveis?${query.toString()}`, {
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("token"),
+    },
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.erro || "Nao foi possivel carregar responsaveis financeiros");
+  }
+
+  return payload;
+}
+
+async function buscarOpcoesResponsavelFinanceiro(unidadeId) {
+  const response = await fetch(`http://localhost:3000/financeiro/unidades/${encodeURIComponent(unidadeId)}/responsavel-opcoes`, {
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("token"),
+    },
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.erro || "Nao foi possivel carregar as opcoes da unidade");
+  }
+
+  return payload;
+}
+
+async function salvarResponsavelFinanceiro(payload) {
+  const response = await fetch("http://localhost:3000/financeiro/responsaveis", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + localStorage.getItem("token"),
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.erro || "Nao foi possivel salvar o responsavel financeiro");
+  }
+  return data;
 }
 
 function renderFinanceiro(container) {
@@ -191,6 +262,34 @@ function renderFinanceiro(container) {
       </div>
     </div>
 
+    <div class="panel financeiro-responsavel-panel">
+      <div class="financeiro-section-head">
+        <div>
+          <h3>Responsavel financeiro da unidade</h3>
+          <p>Defina quem recebe a cobranca oficial e acompanhe a elegibilidade por unidade.</p>
+        </div>
+        <button type="button" class="btn-secondary-soft" id="btnFinanceiroResponsavelRefresh">Atualizar</button>
+      </div>
+      <div class="financeiro-responsavel-table-wrap">
+        <table class="funcionarios-table financeiro-table financeiro-responsavel-table" id="financeiroResponsaveisTable">
+          <thead>
+            <tr>
+              <th>Unidade</th>
+              <th>Responsavel</th>
+              <th>Contato</th>
+              <th>Cobranca</th>
+              <th>Ambiente</th>
+              <th>Atualizacao</th>
+              <th>Acoes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="7">Carregando responsaveis financeiros...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="panel funcionarios-panel financeiro-table-panel">
       <table class="funcionarios-table financeiro-table" id="financeiroTable">
         <thead>
@@ -229,6 +328,9 @@ function renderFinanceiro(container) {
   ].forEach((id) => {
     document.getElementById(id)?.addEventListener("change", () => {
       financeiroState.paginacao.pagina_atual = 1;
+      if (id === "financeiroCondominioFilter") {
+        carregarResponsaveisFinanceirosAdmin();
+      }
       carregarFinanceiroAdmin();
     });
   });
@@ -242,6 +344,7 @@ function renderFinanceiro(container) {
   });
 
   document.getElementById("btnFinanceiroImprimir")?.addEventListener("click", imprimirRelatorioFinanceiro);
+  document.getElementById("btnFinanceiroResponsavelRefresh")?.addEventListener("click", carregarResponsaveisFinanceirosAdmin);
   document.getElementById("financeiroPrevBtn")?.addEventListener("click", () => {
     if (financeiroState.paginacao.pagina_atual > 1) {
       financeiroState.paginacao.pagina_atual -= 1;
@@ -267,12 +370,81 @@ async function carregarContextoFinanceiroAdmin() {
     select.innerHTML = `<option value="">Selecione um condominio</option>${condominios.map((item) => `<option value="${item.id}">${item.nome_fantasia}</option>`).join("")}`;
     if (condominios.length) {
       select.value = condominios[0].id;
+      await carregarResponsaveisFinanceirosAdmin();
       await carregarFinanceiroAdmin();
     }
   } catch (error) {
     console.error(error);
     select.innerHTML = `<option value="">Erro ao carregar condominios</option>`;
     showToast("Erro ao carregar contexto financeiro", "error");
+  }
+}
+
+async function carregarResponsaveisFinanceirosAdmin() {
+  const tbody = document.querySelector("#financeiroResponsaveisTable tbody");
+  const condominioId = document.getElementById("financeiroCondominioFilter")?.value || "";
+  if (!tbody || !condominioId) return;
+
+  tbody.innerHTML = `<tr><td colspan="7">Carregando responsaveis financeiros...</td></tr>`;
+
+  try {
+    const payload = await buscarResponsaveisFinanceiros(condominioId);
+    const itens = Array.isArray(payload?.itens) ? payload.itens : [];
+    financeiroState.responsaveis = itens;
+
+    if (!itens.length) {
+      tbody.innerHTML = `<tr><td colspan="7">Nenhuma unidade encontrada para este condominio.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = itens.map((item) => `
+      <tr>
+        <td data-label="Unidade">
+          <div class="financeiro-cell-stack">
+            <strong>${escapeMensagemHtml(item.unidade_identificacao || "-")}</strong>
+            <small>${escapeMensagemHtml(item.torre_nome || item.condominio_nome || "-")}</small>
+          </div>
+        </td>
+        <td data-label="Responsavel">
+          <div class="financeiro-cell-stack">
+            <strong>${escapeMensagemHtml(item.nome_completo || "Nao configurado")}</strong>
+            <small>${escapeMensagemHtml(item.cpf_cnpj || item.tipo_pagador || "-")}</small>
+          </div>
+        </td>
+        <td data-label="Contato">
+          <div class="financeiro-cell-stack">
+            <strong>${escapeMensagemHtml(item.email || "-")}</strong>
+            <small>${escapeMensagemHtml(item.telefone_principal || "Sem telefone")}</small>
+          </div>
+        </td>
+        <td data-label="Cobranca">
+          <div class="financeiro-cell-stack">
+            ${buildSituacaoResponsavelBadge(item.situacao_financeira)}
+            <small>${Number(item.ativo_para_cobranca) === 1 ? "Ativo para cobranca" : "Bloqueado para cobranca"}${Number(item.recebe_cobranca) === 1 ? " • Recebe aviso" : ""}</small>
+          </div>
+        </td>
+        <td data-label="Ambiente">
+          <span class="funcionario-chip funcionario-chip-matricula">${escapeMensagemHtml(item.ambiente_financeiro || "teste")}</span>
+        </td>
+        <td data-label="Atualizacao">
+          <div class="financeiro-cell-stack">
+            <strong>${escapeMensagemHtml(formatarDataHora(item.atualizado_em || item.criado_em) || "-")}</strong>
+            <small>${item.validado_em ? `Validado em ${escapeMensagemHtml(formatarDataHora(item.validado_em))}` : "Sem validacao"}</small>
+          </div>
+        </td>
+        <td data-label="Acoes">
+          <button type="button" class="btn-inline-action btn-financeiro-responsavel" data-unidade-id="${item.unidade_id}">Configurar</button>
+        </td>
+      </tr>
+    `).join("");
+
+    tbody.querySelectorAll(".btn-financeiro-responsavel").forEach((button) => {
+      button.addEventListener("click", () => abrirModalResponsavelFinanceiro(button.dataset.unidadeId));
+    });
+  } catch (error) {
+    console.error(error);
+    tbody.innerHTML = `<tr><td colspan="7">Erro ao carregar responsaveis financeiros.</td></tr>`;
+    showToast(error.message || "Erro ao carregar responsaveis financeiros", "error");
   }
 }
 
@@ -452,6 +624,16 @@ async function abrirDetalheFinanceiro(id) {
               <strong>${formatarDataCurtaFinanceiro(cobranca.vencimento_em)}</strong>
               <small>${cobranca.pago_em ? `Pago em ${escapeMensagemHtml(formatarDataCurtaFinanceiro(cobranca.pago_em))}` : "Sem pagamento confirmado"}</small>
             </article>
+            <article>
+              <span>Responsavel financeiro</span>
+              <strong>${escapeMensagemHtml(cobranca.responsavel_financeiro_nome || "Nao vinculado")}</strong>
+              <small>${escapeMensagemHtml(cobranca.responsavel_financeiro_email || cobranca.responsavel_financeiro_telefone || "-")}</small>
+            </article>
+            <article>
+              <span>Cobranca habilitada</span>
+              <strong>${Number(cobranca.responsavel_financeiro_ativo_para_cobranca) === 1 ? "Sim" : "Nao"}</strong>
+              <small>${escapeMensagemHtml(cobranca.responsavel_financeiro_ambiente || "teste")} • ${Number(cobranca.responsavel_financeiro_recebe_cobranca) === 1 ? "Recebe notificacao" : "Sem recebimento"}</small>
+            </article>
           </div>
 
           <div class="financeiro-detail-note">
@@ -525,6 +707,197 @@ async function abrirDetalheFinanceiro(id) {
     `;
     modal.querySelector("#closeFinanceiroModal")?.addEventListener("click", fechar);
     showToast(error.message || "Erro ao carregar detalhe financeiro", "error");
+  }
+}
+
+async function abrirModalResponsavelFinanceiro(unidadeId) {
+  const modal = document.getElementById("modalFinanceiro");
+  if (!modal) return;
+
+  modal.classList.remove("hidden");
+  modal.innerHTML = `
+    <div class="modal financeiro-modal financeiro-modal-shell financeiro-responsavel-modal-shell">
+      <div class="modal-header financeiro-modal-header">
+        <div class="financeiro-modal-title-wrap">
+          <h3>Responsavel financeiro da unidade</h3>
+          <p>Defina o pagador oficial da unidade com leitura tecnica e enxuta.</p>
+        </div>
+        <button type="button" class="modal-close" id="closeFinanceiroModal">&times;</button>
+      </div>
+      <div class="financeiro-modal-body">
+        <div class="financeiro-loading-block">Carregando unidade...</div>
+      </div>
+    </div>
+  `;
+
+  const fechar = () => {
+    modal.classList.add("hidden");
+    modal.innerHTML = "";
+  };
+
+  modal.querySelector("#closeFinanceiroModal")?.addEventListener("click", fechar);
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) fechar();
+  }, { once: true });
+
+  try {
+    const payload = await buscarOpcoesResponsavelFinanceiro(unidadeId);
+    const unidade = payload?.unidade || {};
+    const responsavel = payload?.responsavel_atual || null;
+    const candidatos = Array.isArray(payload?.candidatos) ? payload.candidatos : [];
+    const selectedUsuarioId = String(responsavel?.usuario_id || candidatos[0]?.id || "");
+
+    modal.innerHTML = `
+      <div class="modal financeiro-modal financeiro-modal-shell financeiro-responsavel-modal-shell">
+        <div class="modal-header financeiro-modal-header">
+          <div class="financeiro-modal-title-wrap">
+            <h3>Responsavel financeiro</h3>
+            <p>Unidade ${escapeMensagemHtml(unidade.unidade_identificacao || "-")} • ${escapeMensagemHtml(unidade.condominio_nome || "-")}${unidade.torre_nome ? ` • ${escapeMensagemHtml(unidade.torre_nome)}` : ""}</p>
+          </div>
+          <button type="button" class="modal-close" id="closeFinanceiroModal">&times;</button>
+        </div>
+        <div class="financeiro-modal-body">
+          <form id="formFinanceiroResponsavel" class="financeiro-responsavel-form">
+            <input type="hidden" name="unidade_id" value="${escapeMensagemHtml(unidade.id || unidadeId)}" />
+            <div class="financeiro-detail-note">
+              <div><strong>Situacao atual:</strong> ${responsavel ? buildSituacaoResponsavelBadge(responsavel.situacao_financeira) : '<span class="status-badge status-inativo">Nao configurado</span>'}</div>
+              <div><strong>Pendencias:</strong> ${responsavel?.pendencias?.length ? escapeMensagemHtml(responsavel.pendencias.join(", ")) : "Nenhuma pendencia estrutural"}</div>
+            </div>
+            <div class="form-grid two-columns financeiro-responsavel-grid">
+              <label>Morador vinculado
+                <select name="usuario_id" id="financeiroResponsavelUsuarioSelect" required>
+                  <option value="">Selecione</option>
+                  ${candidatos.map((item) => `<option value="${item.id}" ${String(item.id) === selectedUsuarioId ? "selected" : ""}>${escapeMensagemHtml(item.nome_completo)} - ${escapeMensagemHtml(item.papel || "morador")}</option>`).join("")}
+                </select>
+              </label>
+              <label>Tipo de pagador
+                <select name="tipo_pagador">
+                  <option value="pf" ${(responsavel?.tipo_pagador || "pf") === "pf" ? "selected" : ""}>Pessoa fisica</option>
+                  <option value="pj" ${responsavel?.tipo_pagador === "pj" ? "selected" : ""}>Pessoa juridica</option>
+                </select>
+              </label>
+              <label>Nome completo
+                <input type="text" name="nome_completo" value="${escapeMensagemHtml(responsavel?.nome_completo || "")}" maxlength="160" />
+              </label>
+              <label>CPF / CNPJ
+                <input type="text" name="cpf_cnpj" value="${escapeMensagemHtml(responsavel?.cpf_cnpj || "")}" maxlength="20" />
+              </label>
+              <label>Email
+                <input type="email" name="email" value="${escapeMensagemHtml(responsavel?.email || "")}" maxlength="160" />
+              </label>
+              <label>Telefone principal
+                <input type="text" name="telefone_principal" value="${escapeMensagemHtml(responsavel?.telefone_principal || "")}" maxlength="30" />
+              </label>
+              <label>CEP
+                <input type="text" name="cep" value="${escapeMensagemHtml(responsavel?.cep || "")}" maxlength="12" />
+              </label>
+              <label>Logradouro
+                <input type="text" name="logradouro" value="${escapeMensagemHtml(responsavel?.logradouro || "")}" maxlength="160" />
+              </label>
+              <label>Numero
+                <input type="text" name="numero" value="${escapeMensagemHtml(responsavel?.numero || "")}" maxlength="30" />
+              </label>
+              <label>Complemento
+                <input type="text" name="complemento" value="${escapeMensagemHtml(responsavel?.complemento || "")}" maxlength="120" />
+              </label>
+              <label>Bairro
+                <input type="text" name="bairro" value="${escapeMensagemHtml(responsavel?.bairro || "")}" maxlength="120" />
+              </label>
+              <label>Cidade
+                <input type="text" name="cidade" value="${escapeMensagemHtml(responsavel?.cidade || "")}" maxlength="120" />
+              </label>
+              <label>UF
+                <input type="text" name="uf" value="${escapeMensagemHtml(responsavel?.uf || "")}" maxlength="2" />
+              </label>
+              <label>Ambiente
+                <select name="ambiente_financeiro">
+                  <option value="teste" ${(responsavel?.ambiente_financeiro || "teste") === "teste" ? "selected" : ""}>teste</option>
+                  <option value="producao" ${responsavel?.ambiente_financeiro === "producao" ? "selected" : ""}>producao</option>
+                </select>
+              </label>
+              <label>Preferencia de envio
+                <select name="preferencia_envio">
+                  <option value="email" ${responsavel?.preferencia_envio === "email" ? "selected" : ""}>email</option>
+                  <option value="inbox" ${responsavel?.preferencia_envio === "inbox" ? "selected" : ""}>inbox</option>
+                  <option value="email_e_inbox" ${!responsavel?.preferencia_envio || responsavel?.preferencia_envio === "email_e_inbox" ? "selected" : ""}>email e inbox</option>
+                </select>
+              </label>
+              <label class="full-width">Observacao financeira
+                <textarea name="observacao_financeira" rows="3" placeholder="Observacao interna curta e tecnica">${escapeMensagemHtml(responsavel?.observacao_financeira || "")}</textarea>
+              </label>
+            </div>
+            <div class="financeiro-checkbox-row">
+              <label><input type="checkbox" name="ativo_para_cobranca" value="1" ${Number(responsavel?.ativo_para_cobranca) === 1 ? "checked" : ""} /> Ativo para cobranca</label>
+              <label><input type="checkbox" name="recebe_cobranca" value="1" ${Number(responsavel?.recebe_cobranca) === 1 ? "checked" : ""} /> Recebe cobranca</label>
+            </div>
+            <div class="modal-actions">
+              <button type="button" class="btn-cancel" id="cancelFinanceiroResponsavel">Cancelar</button>
+              <button type="submit" class="btn-confirm" id="saveFinanceiroResponsavelBtn">Salvar responsavel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+    modal.querySelector("#closeFinanceiroModal")?.addEventListener("click", fechar);
+    modal.querySelector("#cancelFinanceiroResponsavel")?.addEventListener("click", fechar);
+
+    const usuarioSelect = modal.querySelector("#financeiroResponsavelUsuarioSelect");
+    const nomeInput = modal.querySelector('input[name="nome_completo"]');
+    const emailInput = modal.querySelector('input[name="email"]');
+    const telefoneInput = modal.querySelector('input[name="telefone_principal"]');
+    const documentoInput = modal.querySelector('input[name="cpf_cnpj"]');
+    const hydrateFromCandidate = () => {
+      const candidato = candidatos.find((item) => String(item.id) === String(usuarioSelect.value));
+      if (!candidato) return;
+      if (!nomeInput.value.trim()) nomeInput.value = candidato.nome_completo || "";
+      if (!emailInput.value.trim()) emailInput.value = candidato.email || "";
+      if (!telefoneInput.value.trim()) telefoneInput.value = candidato.phone_whatsapp || "";
+      if (!documentoInput.value.trim()) documentoInput.value = candidato.documento_identificacao || "";
+    };
+    usuarioSelect?.addEventListener("change", hydrateFromCandidate);
+    hydrateFromCandidate();
+
+    modal.querySelector("#formFinanceiroResponsavel")?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const submitButton = modal.querySelector("#saveFinanceiroResponsavelBtn");
+      try {
+        const formData = new FormData(event.currentTarget);
+        const payloadForm = Object.fromEntries(formData.entries());
+        payloadForm.ativo_para_cobranca = formData.get("ativo_para_cobranca") ? 1 : 0;
+        payloadForm.recebe_cobranca = formData.get("recebe_cobranca") ? 1 : 0;
+        submitButton.disabled = true;
+        submitButton.textContent = "Salvando...";
+        await salvarResponsavelFinanceiro(payloadForm);
+        showToast("Responsavel financeiro atualizado");
+        fechar();
+        await carregarResponsaveisFinanceirosAdmin();
+        await carregarFinanceiroAdmin();
+      } catch (error) {
+        showToast(error.message || "Erro ao salvar responsavel financeiro", "error");
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "Salvar responsavel";
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    modal.innerHTML = `
+      <div class="modal financeiro-modal financeiro-modal-shell">
+        <div class="modal-header financeiro-modal-header">
+          <div class="financeiro-modal-title-wrap">
+            <h3>Responsavel financeiro</h3>
+            <p>Nao foi possivel carregar os dados da unidade.</p>
+          </div>
+          <button type="button" class="modal-close" id="closeFinanceiroModal">&times;</button>
+        </div>
+        <div class="financeiro-modal-body">
+          <div class="moradores-empty">Erro ao carregar configuracao financeira da unidade.</div>
+        </div>
+      </div>
+    `;
+    modal.querySelector("#closeFinanceiroModal")?.addEventListener("click", fechar);
+    showToast(error.message || "Erro ao carregar responsavel financeiro", "error");
   }
 }
 

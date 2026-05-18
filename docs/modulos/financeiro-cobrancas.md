@@ -139,6 +139,40 @@ Ele entrega:
 - historico financeiro append-only
 - relatorio de impressao e exportacao simples para PDF pelo navegador
 
+## Governanca administrativa do responsavel financeiro
+
+Com a base estrutural da fase 2 ja aplicada no banco, o `admin` passa a ter uma visao especifica para governar o `responsavel financeiro da unidade`.
+
+Essa visao entrega:
+
+- painel administrativo por condominio
+- leitura da situacao por unidade:
+  - `elegivel`
+  - `pendente`
+  - `nao_configurado`
+- formulario tecnico e compacto para:
+  - escolher o usuario vinculado a unidade
+  - completar os dados minimos do pagador
+  - definir:
+    - `ativo_para_cobranca`
+    - `recebe_cobranca`
+    - `ambiente_financeiro`
+    - `preferencia_envio`
+- atualizacao controlada do vinculo `responsavel_financeiro_id` nas cobrancas locais
+
+### Regras praticas dessa visao
+
+- apenas `admin` governa o responsavel financeiro
+- o usuario escolhido precisa estar ativo em `unidade_usuarios`
+- a troca de responsavel nao apaga historico:
+  - o registro anterior e encerrado
+  - o novo registro assume a posicao ativa
+- a interface nasce em linha tecnica:
+  - fontes pequenas
+  - tabela compacta
+  - formulario objetivo
+  - sem excesso de cards ou elementos visuais pesados
+
 ## Evolucao recomendada
 
 ### Fase 2

@@ -227,6 +227,7 @@ Regra recomendada:
 - a unidade e o centro financeiro do condominio
 - o pagador oficial deve ser tratado como responsavel financeiro da unidade, e nao apenas como morador solto
 - deve existir apenas um responsavel financeiro ativo por unidade em cada momento
+- apenas `admin` pode configurar o responsavel financeiro por painel administrativo proprio
 - cobrancas emitidas devem apontar para o registro de responsabilidade financeira vigente na epoca da emissao
 - a cobranca oficial exige dados minimos consistentes do pagador:
   - `tipo_pagador`

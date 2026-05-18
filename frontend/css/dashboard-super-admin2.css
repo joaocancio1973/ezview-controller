@@ -3114,6 +3114,95 @@ body.light .capacity-hint[data-state="error"] {
   letter-spacing: 0.02em;
 }
 
+.financeiro-section-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.financeiro-section-head h3 {
+  color: #f3f7fb;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.financeiro-section-head p {
+  margin-top: 3px;
+  color: #8ca8bf;
+  font-size: 0.69rem;
+  line-height: 1.45;
+}
+
+.financeiro-responsavel-table-wrap {
+  overflow: auto;
+}
+
+.financeiro-responsavel-table {
+  min-width: 100%;
+}
+
+.financeiro-responsavel-table thead th {
+  white-space: nowrap;
+}
+
+.financeiro-responsavel-modal-shell {
+  width: min(900px, calc(100vw - 32px));
+}
+
+.financeiro-responsavel-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.financeiro-responsavel-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+
+.financeiro-responsavel-grid label {
+  gap: 4px;
+}
+
+.financeiro-responsavel-grid input,
+.financeiro-responsavel-grid select,
+.financeiro-responsavel-grid textarea {
+  min-height: 33px;
+  font-size: 0.73rem;
+}
+
+.financeiro-responsavel-grid textarea {
+  min-height: 72px;
+  resize: vertical;
+}
+
+.financeiro-checkbox-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(125, 211, 252, 0.1);
+  background: rgba(8, 15, 28, 0.44);
+}
+
+.financeiro-checkbox-row label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #c9d8e2;
+  font-size: 0.72rem;
+  font-weight: 400;
+}
+
+.financeiro-checkbox-row input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+}
+
 body.light .financeiro-mini-chip {
   background: rgba(15, 23, 42, 0.04);
   border-color: rgba(15, 23, 42, 0.1);
@@ -3132,6 +3221,7 @@ body.light .financeiro-detail-grid small,
 body.light .financeiro-detail-grid span,
 body.light .financeiro-detail-note,
 body.light .financeiro-loading-block,
+body.light .financeiro-section-head p,
 body.light .financeiro-toolbar-inline span,
 body.light .financeiro-pagination-info {
   color: #617487;
@@ -3139,9 +3229,15 @@ body.light .financeiro-pagination-info {
 
 body.light .financeiro-detail-grid article,
 body.light .financeiro-detail-note,
-body.light .financeiro-loading-block {
+body.light .financeiro-loading-block,
+body.light .financeiro-checkbox-row {
   background: rgba(255, 255, 255, 0.82);
   border-color: rgba(15, 23, 42, 0.08);
+}
+
+body.light .financeiro-section-head h3,
+body.light .financeiro-checkbox-row label {
+  color: #112032;
 }
 
 @media (max-width: 1180px) {
@@ -3152,11 +3248,16 @@ body.light .financeiro-loading-block {
   .financeiro-detail-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .financeiro-responsavel-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 760px) {
   .financeiro-filters-grid,
-  .financeiro-detail-grid {
+  .financeiro-detail-grid,
+  .financeiro-responsavel-grid {
     grid-template-columns: 1fr;
   }
 
@@ -3167,6 +3268,11 @@ body.light .financeiro-loading-block {
 
   .financeiro-pagination-info {
     text-align: left;
+  }
+
+  .financeiro-section-head {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 

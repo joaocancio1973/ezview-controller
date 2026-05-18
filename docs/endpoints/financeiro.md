@@ -43,6 +43,69 @@ Retorna:
 - eventos
 - vinculos com reserva
 - contexto de unidade e usuario
+- contexto do `responsavel financeiro`, quando houver
+
+## GET `/financeiro/responsaveis`
+
+Lista as unidades do condominio e a situacao atual do `responsavel financeiro`.
+
+### Filtros ativos
+
+- `condominio_id`
+- `busca`
+
+### Retorno esperado
+
+- unidade
+- torre
+- condominio
+- `responsavel_financeiro_id`
+- `usuario_id`
+- dados basicos do pagador
+- flags de cobranca
+- `ambiente_financeiro`
+- `situacao_financeira`
+- lista de `pendencias`
+
+## GET `/financeiro/unidades/:unidadeId/responsavel-opcoes`
+
+Retorna os dados da unidade para configuracao e os candidatos ativos em `unidade_usuarios`.
+
+### Retorno esperado
+
+- `unidade`
+- `responsavel_atual`
+- `candidatos`
+
+## POST `/financeiro/responsaveis`
+
+Salva ou substitui o `responsavel financeiro` da unidade.
+
+### Payload atual
+
+```json
+{
+  "unidade_id": "uuid-da-unidade",
+  "usuario_id": "uuid-do-usuario",
+  "tipo_pagador": "pf",
+  "nome_completo": "Fulano da Silva",
+  "cpf_cnpj": "000.000.000-00",
+  "email": "fulano@email.com",
+  "telefone_principal": "71999999999",
+  "cep": "40000-000",
+  "logradouro": "Rua Exemplo",
+  "numero": "100",
+  "complemento": "Apto 101",
+  "bairro": "Centro",
+  "cidade": "Salvador",
+  "uf": "BA",
+  "ambiente_financeiro": "teste",
+  "preferencia_envio": "email_e_inbox",
+  "ativo_para_cobranca": true,
+  "recebe_cobranca": true,
+  "observacao_financeira": "Responsavel validado pela administracao"
+}
+```
 
 ## PATCH `/financeiro/cobrancas/:id/status`
 

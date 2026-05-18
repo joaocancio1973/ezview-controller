@@ -1,4 +1,4 @@
-const STATUS_FINANCEIRO_LABELS = {
+﻿const STATUS_FINANCEIRO_LABELS = {
   rascunho: "Rascunho",
   pendente: "Pendente",
   emitido: "Emitido",
@@ -352,6 +352,11 @@ function renderFinanceiro(container) {
 
   document.getElementById("btnFinanceiroImprimir")?.addEventListener("click", imprimirRelatorioFinanceiro);
   document.getElementById("btnFinanceiroResponsavelRefresh")?.addEventListener("click", carregarResponsaveisFinanceirosAdmin);
+  document.querySelector("#financeiroResponsaveisTable tbody")?.addEventListener("click", (event) => {
+    const button = event.target.closest(".btn-financeiro-responsavel");
+    if (!button) return;
+    abrirModalResponsavelFinanceiro(button.dataset.unidadeId);
+  });
   document.getElementById("financeiroPrevBtn")?.addEventListener("click", () => {
     if (financeiroState.paginacao.pagina_atual > 1) {
       financeiroState.paginacao.pagina_atual -= 1;
@@ -429,7 +434,7 @@ async function carregarResponsaveisFinanceirosAdmin() {
         <td data-label="Cobranca">
           <div class="financeiro-cell-stack">
             ${buildSituacaoResponsavelBadge(item.situacao_financeira)}
-            <small>${Number(item.ativo_para_cobranca) === 1 ? "Ativo para cobranca" : "Bloqueado para cobranca"}${Number(item.recebe_cobranca) === 1 ? " • Recebe aviso" : ""}</small>
+            <small>${Number(item.ativo_para_cobranca) === 1 ? "Ativo para cobranca" : "Bloqueado para cobranca"}${Number(item.recebe_cobranca) === 1 ? " | Recebe aviso" : ""}</small>
           </div>
         </td>
         <td data-label="Ambiente">
@@ -447,9 +452,6 @@ async function carregarResponsaveisFinanceirosAdmin() {
       </tr>
     `).join("");
 
-    tbody.querySelectorAll(".btn-financeiro-responsavel").forEach((button) => {
-      button.addEventListener("click", () => abrirModalResponsavelFinanceiro(button.dataset.unidadeId));
-    });
   } catch (error) {
     console.error(error);
     tbody.innerHTML = `<tr><td colspan="7">Erro ao carregar responsaveis financeiros.</td></tr>`;
@@ -641,7 +643,7 @@ async function abrirDetalheFinanceiro(id) {
             <article>
               <span>Cobranca habilitada</span>
               <strong>${Number(cobranca.responsavel_financeiro_ativo_para_cobranca) === 1 ? "Sim" : "Nao"}</strong>
-              <small>${escapeMensagemHtml(cobranca.responsavel_financeiro_ambiente || "teste")} • ${Number(cobranca.responsavel_financeiro_recebe_cobranca) === 1 ? "Recebe notificacao" : "Sem recebimento"}</small>
+              <small>${escapeMensagemHtml(cobranca.responsavel_financeiro_ambiente || "teste")} | ${Number(cobranca.responsavel_financeiro_recebe_cobranca) === 1 ? "Recebe notificacao" : "Sem recebimento"}</small>
             </article>
           </div>
 
@@ -761,7 +763,7 @@ async function abrirModalResponsavelFinanceiro(unidadeId) {
         <div class="modal-header financeiro-modal-header">
           <div class="financeiro-modal-title-wrap">
             <h3>Responsavel financeiro</h3>
-            <p>Unidade ${escapeMensagemHtml(unidade.unidade_identificacao || "-")} • ${escapeMensagemHtml(unidade.condominio_nome || "-")}${unidade.torre_nome ? ` • ${escapeMensagemHtml(unidade.torre_nome)}` : ""}</p>
+            <p>Unidade ${escapeMensagemHtml(unidade.unidade_identificacao || "-")} | ${escapeMensagemHtml(unidade.condominio_nome || "-")}${unidade.torre_nome ? ` | ${escapeMensagemHtml(unidade.torre_nome)}` : ""}</p>
           </div>
           <button type="button" class="modal-close" id="closeFinanceiroModal">&times;</button>
         </div>
@@ -1000,3 +1002,4 @@ function imprimirRelatorioFinanceiro() {
   popup.focus();
   setTimeout(() => popup.print(), 250);
 }
+

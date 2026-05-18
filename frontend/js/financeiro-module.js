@@ -73,6 +73,100 @@ function buildOcupacaoFinanceiraBadge(situacao) {
   return `<span class="status-badge status-inativo">Sem moradores</span>`;
 }
 
+function aplicarMascaraCepFinanceiro(input) {
+  if (!input) return;
+  input.addEventListener("input", () => {
+    const digits = input.value.replace(/\D/g, "").slice(0, 8);
+    input.value = digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits;
+  });
+}
+
+async function buscarEnderecoPorCepFinanceiro(cep) {
+  const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+  if (!response.ok) {
+    throw new Error("Nao foi possivel consultar o CEP agora");
+  }
+
+  const data = await response.json();
+  if (data?.erro) {
+    throw new Error("CEP nao encontrado");
+  }
+
+  return data;
+}
+
+function configurarAutoCepResponsavelFinanceiro(modal) {
+  const cepInput = modal?.querySelector('input[name="cep"]');
+  const logradouroInput = modal?.querySelector('input[name="logradouro"]');
+  const bairroInput = modal?.querySelector('input[name="bairro"]');
+  const cidadeInput = modal?.querySelector('input[name="cidade"]');
+  const ufInput = modal?.querySelector('input[name="uf"]');
+  const statusEl = modal?.querySelector("#financeiroCepStatus");
+  if (!cepInput) return;
+
+  let lastFetchedCep = "";
+  let pending = false;
+
+  const updateStatus = (message, tone = "") => {
+    if (!statusEl) return;
+    statusEl.textContent = message;
+    statusEl.dataset.state = tone;
+  };
+
+  const preencherEndereco = (data) => {
+    if (logradouroInput) logradouroInput.value = data.logradouro || "";
+    if (bairroInput) bairroInput.value = data.bairro || "";
+    if (cidadeInput) cidadeInput.value = data.localidade || "";
+    if (ufInput) ufInput.value = data.uf || "";
+  };
+
+  const consultarCep = async () => {
+    const cep = cepInput.value.replace(/\D/g, "");
+    if (cep.length === 0) {
+      updateStatus("Informe o CEP para preencher o endereco automaticamente.");
+      return;
+    }
+
+    if (cep.length < 8) {
+      updateStatus("Digite um CEP valido com 8 numeros.", "warning");
+      return;
+    }
+
+    if (pending || cep === lastFetchedCep) return;
+
+    pending = true;
+    updateStatus("Consultando CEP...", "loading");
+    try {
+      const data = await buscarEnderecoPorCepFinanceiro(cep);
+      preencherEndereco(data);
+      lastFetchedCep = cep;
+      updateStatus("Endereco preenchido automaticamente.", "success");
+    } catch (error) {
+      updateStatus(error.message || "Falha ao consultar o CEP.", "error");
+      showToast(error.message || "Falha ao consultar o CEP", "error");
+    } finally {
+      pending = false;
+    }
+  };
+
+  aplicarMascaraCepFinanceiro(cepInput);
+  cepInput.addEventListener("blur", consultarCep);
+  cepInput.addEventListener("input", () => {
+    const cep = cepInput.value.replace(/\D/g, "");
+    if (cep.length < 8) {
+      lastFetchedCep = "";
+      if (cep.length === 0) {
+        updateStatus("Informe o CEP para preencher o endereco automaticamente.");
+      }
+    }
+    if (cep.length === 8) {
+      consultarCep();
+    }
+  });
+
+  updateStatus("Informe o CEP para preencher o endereco automaticamente.");
+}
+
 function formatarValorFinanceiro(value) {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -802,6 +896,7 @@ async function abrirModalResponsavelFinanceiro(unidadeId) {
               </label>
               <label>CEP
                 <input type="text" name="cep" value="${escapeMensagemHtml(responsavel?.cep || "")}" maxlength="12" />
+                <small id="financeiroCepStatus" class="field-help">Informe o CEP para preencher o endereco automaticamente.</small>
               </label>
               <label>Logradouro
                 <input type="text" name="logradouro" value="${escapeMensagemHtml(responsavel?.logradouro || "")}" maxlength="160" />
@@ -859,6 +954,7 @@ async function abrirModalResponsavelFinanceiro(unidadeId) {
     const emailInput = modal.querySelector('input[name="email"]');
     const telefoneInput = modal.querySelector('input[name="telefone_principal"]');
     const documentoInput = modal.querySelector('input[name="cpf_cnpj"]');
+    configurarAutoCepResponsavelFinanceiro(modal);
     const hydrateFromCandidate = () => {
       const candidato = candidatos.find((item) => String(item.id) === String(usuarioSelect.value));
       if (!candidato) return;

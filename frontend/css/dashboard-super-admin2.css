@@ -2996,6 +2996,12 @@ body.light .capacity-hint[data-state="error"] {
   line-height: 1.4;
 }
 
+.financeiro-inline-note {
+  color: #8ca8bf;
+  font-size: 0.66rem;
+  font-weight: 400;
+}
+
 .financeiro-value-cell {
   font-variant-numeric: tabular-nums;
 }

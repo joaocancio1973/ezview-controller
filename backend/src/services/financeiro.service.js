@@ -367,8 +367,11 @@ function buildPendenciasResponsavel(item) {
 
 function decorateResponsavelFinanceiro(item) {
   const pendencias = buildPendenciasResponsavel(item);
+  const moradoresAtivos = Number(item?.moradores_ativos || 0);
   return {
     ...item,
+    moradores_ativos: moradoresAtivos,
+    ocupacao_situacao: moradoresAtivos > 0 ? "ocupada" : "sem_moradores",
     pendencias,
     elegivel_cobranca: pendencias.length === 0,
     situacao_financeira: !item?.usuario_id
@@ -711,10 +714,36 @@ export async function listFinanceiroResponsaveisService(usuario, filtros = {}) {
       urf.ambiente_financeiro,
       urf.validado_em,
       urf.atualizado_em,
-      urf.criado_em
+      urf.criado_em,
+      COALESCE(ocup.moradores_ativos, 0) AS moradores_ativos,
+      ocup.morador_principal,
+      ocup.moradores_lista
     FROM unidades u
     INNER JOIN condominios c ON c.id = u.condominio_id
     LEFT JOIN torres t ON t.id = u.torre_id
+    LEFT JOIN (
+      SELECT
+        uu.unidade_id,
+        COUNT(*) AS moradores_ativos,
+        SUBSTRING_INDEX(
+          GROUP_CONCAT(
+            usr.nome_completo
+            ORDER BY FIELD(uu.papel, 'titular', 'proprietario', 'dependente'), usr.nome_completo
+            SEPARATOR ' | '
+          ),
+          ' | ',
+          1
+        ) AS morador_principal,
+        GROUP_CONCAT(
+          CONCAT(usr.nome_completo, ' (', uu.papel, ')')
+          ORDER BY FIELD(uu.papel, 'titular', 'proprietario', 'dependente'), usr.nome_completo
+          SEPARATOR ' | '
+        ) AS moradores_lista
+      FROM unidade_usuarios uu
+      INNER JOIN usuarios usr ON usr.id = uu.usuario_id
+      WHERE uu.ativo = 1
+      GROUP BY uu.unidade_id
+    ) ocup ON ocup.unidade_id = u.id
     LEFT JOIN unidades_responsaveis_financeiros urf
       ON urf.unidade_id = u.id
      AND urf.ativo = 1

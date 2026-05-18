@@ -66,6 +66,13 @@ function buildSituacaoResponsavelBadge(situacao) {
   return `<span class="status-badge ${classe}">${formatarSituacaoResponsavelFinanceiro(situacao)}</span>`;
 }
 
+function buildOcupacaoFinanceiraBadge(situacao) {
+  if (situacao === "ocupada") {
+    return `<span class="status-badge status-ativo">Ocupada</span>`;
+  }
+  return `<span class="status-badge status-inativo">Sem moradores</span>`;
+}
+
 function formatarValorFinanceiro(value) {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -403,12 +410,14 @@ async function carregarResponsaveisFinanceirosAdmin() {
           <div class="financeiro-cell-stack">
             <strong>${escapeMensagemHtml(item.unidade_identificacao || "-")}</strong>
             <small>${escapeMensagemHtml(item.torre_nome || item.condominio_nome || "-")}</small>
+            <small>${buildOcupacaoFinanceiraBadge(item.ocupacao_situacao)} ${item.morador_principal ? ` <span class="financeiro-inline-note">Morador: ${escapeMensagemHtml(item.morador_principal)}</span>` : ""}</small>
           </div>
         </td>
         <td data-label="Responsavel">
           <div class="financeiro-cell-stack">
             <strong>${escapeMensagemHtml(item.nome_completo || "Nao configurado")}</strong>
             <small>${escapeMensagemHtml(item.cpf_cnpj || item.tipo_pagador || "-")}</small>
+            <small>${!item.nome_completo && item.moradores_ativos > 0 ? "Unidade ocupada, mas sem responsavel financeiro definido" : item.moradores_ativos > 0 ? `${item.moradores_ativos} morador(es) ativo(s)` : "Unidade sem moradores ativos"}</small>
           </div>
         </td>
         <td data-label="Contato">
@@ -762,6 +771,7 @@ async function abrirModalResponsavelFinanceiro(unidadeId) {
             <div class="financeiro-detail-note">
               <div><strong>Situacao atual:</strong> ${responsavel ? buildSituacaoResponsavelBadge(responsavel.situacao_financeira) : '<span class="status-badge status-inativo">Nao configurado</span>'}</div>
               <div><strong>Pendencias:</strong> ${responsavel?.pendencias?.length ? escapeMensagemHtml(responsavel.pendencias.join(", ")) : "Nenhuma pendencia estrutural"}</div>
+              <div><strong>Moradores elegiveis:</strong> ${candidatos.length ? `${candidatos.length} vinculado(s) ativo(s)` : "Nenhum morador ativo nesta unidade"}</div>
             </div>
             <div class="form-grid two-columns financeiro-responsavel-grid">
               <label>Morador vinculado

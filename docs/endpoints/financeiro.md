@@ -59,6 +59,8 @@ Lista as unidades do condominio e a situacao atual do `responsavel financeiro`.
 - unidade
 - torre
 - condominio
+- ocupacao da unidade
+- morador principal de referencia, quando houver
 - `responsavel_financeiro_id`
 - `usuario_id`
 - dados basicos do pagador
@@ -70,6 +72,15 @@ Lista as unidades do condominio e a situacao atual do `responsavel financeiro`.
 ## GET `/financeiro/unidades/:unidadeId/responsavel-opcoes`
 
 Retorna os dados da unidade para configuracao e os candidatos ativos em `unidade_usuarios`.
+
+Observacao de comportamento atual:
+
+- o modal administrativo usa autopreenchimento de endereco por `CEP`
+- a consulta preenche automaticamente:
+  - `logradouro`
+  - `bairro`
+  - `cidade`
+  - `uf`
 
 ### Retorno esperado
 

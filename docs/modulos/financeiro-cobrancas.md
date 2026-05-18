@@ -146,6 +146,10 @@ Com a base estrutural da fase 2 ja aplicada no banco, o `admin` passa a ter uma 
 Essa visao entrega:
 
 - painel administrativo por condominio
+- indicacao de ocupacao da unidade:
+  - `ocupada`
+  - `sem moradores`
+- destaque do morador principal de referencia, quando existir
 - leitura da situacao por unidade:
   - `elegivel`
   - `pendente`
@@ -158,6 +162,11 @@ Essa visao entrega:
     - `recebe_cobranca`
     - `ambiente_financeiro`
     - `preferencia_envio`
+  - autopreenchimento de endereco por `CEP` para:
+    - `logradouro`
+    - `bairro`
+    - `cidade`
+    - `uf`
 - atualizacao controlada do vinculo `responsavel_financeiro_id` nas cobrancas locais
 
 ### Regras praticas dessa visao

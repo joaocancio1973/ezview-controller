@@ -46,6 +46,8 @@ Objetivos desta documentacao:
   - descricao funcional dos modulos do SaaS
 - `modulos/financeiro-cobrancas.md`
   - fase 1 do dominio financeiro e de cobrancas operacionais
+- `modulos/financeiro-plano-final-conclusao.md`
+  - trilha executiva de fechamento do capitulo financeiro
 - `modulos/financeiro-boletos-arquitetura.md`
   - arquitetura oficial do financeiro com boletos, webhook e notificacao automatica
 - `modulos/financeiro-boletos-plano-implementacao.md`

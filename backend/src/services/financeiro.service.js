@@ -1,5 +1,22 @@
 import { v4 as uuidv4 } from "uuid";
 import db from "../config/database.js";
+import fs from "fs/promises";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const MIME_EXTENSOES_COMPROVANTE = {
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "image/webp": ".webp",
+  "application/pdf": ".pdf",
+};
+const TAMANHO_MAX_COMPROVANTE_BYTES = 5 * 1024 * 1024;
+const QUANTIDADE_MAX_COMPROVANTES = 3;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const FRONTEND_ROOT = path.resolve(__dirname, "../../../frontend");
+const FINANCEIRO_UPLOAD_DIR = path.join(FRONTEND_ROOT, "uploads", "financeiro");
 
 function normalizeText(value) {
   return typeof value === "string" ? value.trim() : value;
@@ -12,6 +29,84 @@ function normalizeBoolean(value) {
     return ["1", "true", "on", "sim", "yes"].includes(value.trim().toLowerCase());
   }
   return false;
+}
+
+function parseComprovantesPayload(rawAnexos) {
+  if (!rawAnexos) return [];
+
+  const anexos = Array.isArray(rawAnexos) ? rawAnexos : [rawAnexos];
+  if (anexos.length > QUANTIDADE_MAX_COMPROVANTES) {
+    const error = new Error(`Limite de ${QUANTIDADE_MAX_COMPROVANTES} comprovantes por cobranca`);
+    error.status = 400;
+    throw error;
+  }
+
+  return anexos.filter(Boolean).map((anexo, index) => {
+    const nomeOriginal = normalizeText(anexo.nome_original || anexo.nome || `comprovante-${index + 1}`);
+    const dataUrl = normalizeText(anexo.data_url || anexo.conteudo || anexo.base64);
+    const match = dataUrl?.match(/^data:([^;]+);base64,(.+)$/);
+
+    if (!match) {
+      const error = new Error("Formato invalido de comprovante");
+      error.status = 400;
+      throw error;
+    }
+
+    const mimeType = match[1];
+    const base64 = match[2];
+    const extensao = MIME_EXTENSOES_COMPROVANTE[mimeType];
+    if (!extensao) {
+      const error = new Error("Somente PDF, JPG, PNG ou WEBP sao aceitos");
+      error.status = 400;
+      throw error;
+    }
+
+    const buffer = Buffer.from(base64, "base64");
+    if (!buffer.length || buffer.length > TAMANHO_MAX_COMPROVANTE_BYTES) {
+      const error = new Error("Cada comprovante deve ter no maximo 5 MB");
+      error.status = 400;
+      throw error;
+    }
+
+    return { nomeOriginal, mimeType, extensao, buffer };
+  });
+}
+
+async function persistirComprovantesFinanceiros(connection, { cobrancaId, condominioId, usuarioId, anexos }) {
+  if (!anexos.length) return [];
+
+  await fs.mkdir(FINANCEIRO_UPLOAD_DIR, { recursive: true });
+  const registros = [];
+
+  for (const anexo of anexos) {
+    const id = uuidv4();
+    const nomeArquivo = `${cobrancaId}-${id}${anexo.extensao}`;
+    const caminhoFisico = path.join(FINANCEIRO_UPLOAD_DIR, nomeArquivo);
+    const caminhoRelativo = `/uploads/financeiro/${nomeArquivo}`;
+
+    await fs.writeFile(caminhoFisico, anexo.buffer);
+    await connection.query(
+      `
+      INSERT INTO financeiro_anexos
+        (id, cobranca_id, condominio_id, usuario_id, nome_original, nome_arquivo, mime_type, caminho_relativo, tamanho_bytes, categoria)
+      VALUES
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, 'comprovante')
+      `,
+      [id, cobrancaId, condominioId, usuarioId, anexo.nomeOriginal, nomeArquivo, anexo.mimeType, caminhoRelativo, anexo.buffer.length],
+    );
+
+    registros.push({
+      id,
+      nome_original: anexo.nomeOriginal,
+      nome_arquivo: nomeArquivo,
+      mime_type: anexo.mimeType,
+      caminho_relativo: caminhoRelativo,
+      tamanho_bytes: anexo.buffer.length,
+      categoria: "comprovante",
+    });
+  }
+
+  return registros;
 }
 
 function mapStatusFromReserva(reserva, existingStatus = null) {
@@ -652,7 +747,25 @@ export async function getFinanceiroCobrancaDetalheService(usuario, cobrancaId) {
     [cobrancaId],
   );
 
-  return { cobranca, eventos };
+  const [anexos] = await db.query(
+    `
+    SELECT
+      id,
+      nome_original,
+      nome_arquivo,
+      mime_type,
+      caminho_relativo,
+      tamanho_bytes,
+      categoria,
+      criado_em
+    FROM financeiro_anexos
+    WHERE cobranca_id = ?
+    ORDER BY criado_em DESC
+    `,
+    [cobrancaId],
+  );
+
+  return { cobranca, eventos, anexos };
 }
 
 export async function listFinanceiroResponsaveisService(usuario, filtros = {}) {
@@ -1050,6 +1163,78 @@ export async function saveFinanceiroResponsavelService(usuario, data = {}) {
 
     const resultado = await getFinanceiroResponsavelOpcoesService(usuario, unidadeId);
     return resultado;
+  } catch (error) {
+    if (connection) await connection.rollback();
+    throw error;
+  } finally {
+    if (connection) connection.release();
+  }
+}
+
+export async function addFinanceiroComprovantesService(usuario, cobrancaId, data = {}) {
+  if (usuario?.perfil !== "admin") {
+    const error = new Error("Apenas admin pode anexar comprovantes financeiros");
+    error.status = 403;
+    throw error;
+  }
+
+  const anexos = parseComprovantesPayload(data.anexos);
+  if (!anexos.length) {
+    const error = new Error("Selecione ao menos um comprovante");
+    error.status = 400;
+    throw error;
+  }
+
+  const condominioIds = await getAdminCondominiosIds(usuario.id);
+  if (!condominioIds.length) {
+    const error = new Error("Admin sem condominio ativo");
+    error.status = 404;
+    throw error;
+  }
+
+  let connection;
+  try {
+    connection = await db.getConnection();
+    await connection.beginTransaction();
+
+    const [rows] = await connection.query(
+      `
+      SELECT id, condominio_id, status
+      FROM financeiro_cobrancas
+      WHERE id = ?
+        AND condominio_id IN (${condominioIds.map(() => "?").join(",")})
+      LIMIT 1
+      `,
+      [cobrancaId, ...condominioIds],
+    );
+
+    if (!rows.length) {
+      const error = new Error("Cobranca nao encontrada");
+      error.status = 404;
+      throw error;
+    }
+
+    const cobranca = rows[0];
+    const comprovantes = await persistirComprovantesFinanceiros(connection, {
+      cobrancaId,
+      condominioId: cobranca.condominio_id,
+      usuarioId: usuario.id,
+      anexos,
+    });
+
+    await registrarEventoFinanceiro(connection, {
+      cobrancaId,
+      condominioId: cobranca.condominio_id,
+      usuarioId: usuario.id,
+      origemAtor: usuario.perfil || "admin",
+      tipoEvento: "comprovante_anexado",
+      statusAnterior: cobranca.status,
+      statusNovo: cobranca.status,
+      descricao: `${comprovantes.length} comprovante(s) anexado(s) na cobranca.`,
+    });
+
+    await connection.commit();
+    return { anexos: comprovantes };
   } catch (error) {
     if (connection) await connection.rollback();
     throw error;

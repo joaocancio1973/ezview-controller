@@ -3120,6 +3120,66 @@ body.light .capacity-hint[data-state="error"] {
   letter-spacing: 0.02em;
 }
 
+.financeiro-upload-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.financeiro-upload-inline input[type="file"] {
+  font-size: 0.71rem;
+}
+
+.financeiro-anexos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.financeiro-anexo-card {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 8px;
+  min-height: 122px;
+  border-radius: 10px;
+  border: 1px solid rgba(125, 211, 252, 0.12);
+  background: rgba(8, 15, 28, 0.5);
+  text-decoration: none;
+}
+
+.financeiro-anexo-card img {
+  width: 100%;
+  height: 78px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.financeiro-anexo-card span {
+  color: #d7e3ea;
+  font-size: 0.68rem;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.financeiro-anexo-filetag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 78px;
+  border-radius: 8px;
+  background: rgba(125, 211, 252, 0.09);
+  color: #dff7ff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
 .financeiro-section-head {
   display: flex;
   align-items: start;
@@ -3244,6 +3304,20 @@ body.light .financeiro-checkbox-row {
 body.light .financeiro-section-head h3,
 body.light .financeiro-checkbox-row label {
   color: #112032;
+}
+
+body.light .financeiro-anexo-card {
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+body.light .financeiro-anexo-card span {
+  color: #24384b;
+}
+
+body.light .financeiro-anexo-filetag {
+  background: rgba(15, 23, 42, 0.06);
+  color: #24384b;
 }
 
 @media (max-width: 1180px) {

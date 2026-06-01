@@ -182,6 +182,26 @@ Essa visao entrega:
   - formulario objetivo
   - sem excesso de cards ou elementos visuais pesados
 
+## Comprovantes e anexos
+
+O detalhe da cobranca passa a suportar `comprovantes` operacionais.
+
+### Escopo atual
+
+- upload administrativo no detalhe da cobranca
+- leitura imediata dos anexos no mesmo modal
+- suporte inicial para:
+  - `pdf`
+  - `jpg`
+  - `png`
+  - `webp`
+- evento append-only no historico financeiro
+
+### Limites atuais
+
+- ate `3` comprovantes por envio
+- ate `5 MB` por arquivo
+
 ## Evolucao recomendada
 
 ### Fase 2

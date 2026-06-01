@@ -1,4 +1,5 @@
 import {
+  addFinanceiroComprovantesService,
   getFinanceiroCobrancaDetalheService,
   listFinanceiroCobrancasService,
   listFinanceiroResponsaveisService,
@@ -26,6 +27,18 @@ export async function getFinanceiroCobrancaDetalhe(req, res) {
     console.error("Erro ao carregar detalhe da cobranca:", error);
     return res.status(error.status || 500).json({
       erro: error.message || "Erro ao carregar detalhe da cobranca",
+    });
+  }
+}
+
+export async function postFinanceiroComprovantes(req, res) {
+  try {
+    const resultado = await addFinanceiroComprovantesService(req.user, req.params.id, req.body);
+    return res.status(201).json(resultado);
+  } catch (error) {
+    console.error("Erro ao anexar comprovante financeiro:", error);
+    return res.status(error.status || 500).json({
+      erro: error.message || "Erro ao anexar comprovante financeiro",
     });
   }
 }

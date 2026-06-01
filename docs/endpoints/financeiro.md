@@ -137,7 +137,18 @@ Lista o historico append-only da cobranca.
 
 ## POST `/financeiro/cobrancas/:id/comprovantes`
 
-Previsto para fase seguinte, quando `financeiro_anexos` entrar.
+Anexa comprovantes diretamente a uma cobranca do contexto do `admin`.
+
+### Comportamento atual
+
+- aceita ate `3` arquivos por envio
+- ate `5 MB` por arquivo
+- formatos aceitos:
+  - `pdf`
+  - `jpg`
+  - `png`
+  - `webp`
+- registra evento financeiro append-only de comprovante anexado
 
 ## POST `/financeiro/gateway/contas`
 

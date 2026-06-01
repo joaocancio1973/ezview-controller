@@ -284,6 +284,52 @@ async function salvarResponsavelFinanceiro(payload) {
   return data;
 }
 
+async function enviarComprovantesFinanceiros(cobrancaId, anexos) {
+  const response = await fetch(`http://localhost:3000/financeiro/cobrancas/${encodeURIComponent(cobrancaId)}/comprovantes`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + localStorage.getItem("token"),
+    },
+    body: JSON.stringify({ anexos }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.erro || "Nao foi possivel anexar os comprovantes");
+  }
+  return data;
+}
+
+async function lerArquivosFinanceiroComoDataUrl(fileList) {
+  const files = Array.from(fileList || []);
+  if (!files.length) return [];
+  if (files.length > 3) {
+    throw new Error("Envie no maximo 3 comprovantes por vez");
+  }
+
+  const resultados = [];
+  for (const file of files) {
+    if (file.size > 5 * 1024 * 1024) {
+      throw new Error("Cada comprovante deve ter no maximo 5 MB");
+    }
+
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("Falha ao ler arquivo"));
+      reader.readAsDataURL(file);
+    });
+
+    resultados.push({
+      nome_original: file.name,
+      data_url: dataUrl,
+    });
+  }
+
+  return resultados;
+}
+
 function renderFinanceiro(container) {
   const user = JSON.parse(localStorage.getItem("usuario") || "{}");
   if (user?.perfil !== "admin") {
@@ -696,6 +742,7 @@ async function abrirDetalheFinanceiro(id) {
     const payload = await buscarDetalheCobrancaFinanceira(id);
     const cobranca = payload?.cobranca || {};
     const eventos = Array.isArray(payload?.eventos) ? payload.eventos : [];
+    const anexos = Array.isArray(payload?.anexos) ? payload.anexos : [];
 
     modal.innerHTML = `
       <div class="modal financeiro-modal financeiro-modal-shell">
@@ -748,6 +795,27 @@ async function abrirDetalheFinanceiro(id) {
           </div>
 
           <div class="financeiro-history-block">
+            <div class="financeiro-history-title">Comprovantes</div>
+            <div class="financeiro-upload-inline">
+              <input type="file" id="financeiroComprovantesInput" accept=".pdf,image/*" multiple />
+              <button type="button" class="btn-inline-action" id="financeiroUploadComprovanteBtn">Anexar comprovante</button>
+            </div>
+            ${anexos.length ? `
+              <div class="financeiro-anexos-grid">
+                ${anexos.map((anexo) => {
+                  const isImage = String(anexo.mime_type || "").startsWith("image/");
+                  return `
+                    <a href="${anexo.caminho_relativo}" target="_blank" rel="noopener noreferrer" class="financeiro-anexo-card">
+                      ${isImage ? `<img src="${anexo.caminho_relativo}" alt="${escapeMensagemHtml(anexo.nome_original || "Comprovante")}" />` : `<div class="financeiro-anexo-filetag">PDF</div>`}
+                      <span>${escapeMensagemHtml(anexo.nome_original || "Comprovante")}</span>
+                    </a>
+                  `;
+                }).join("")}
+              </div>
+            ` : `<div class="moradores-empty">Nenhum comprovante anexado ainda.</div>`}
+          </div>
+
+          <div class="financeiro-history-block">
             <div class="financeiro-history-title">Historico da cobranca</div>
             ${eventos.length ? `
               <table class="funcionarios-table financeiro-history-table">
@@ -794,6 +862,27 @@ async function abrirDetalheFinanceiro(id) {
     `;
 
     modal.querySelector("#closeFinanceiroModal")?.addEventListener("click", fechar);
+    modal.querySelector("#financeiroUploadComprovanteBtn")?.addEventListener("click", async () => {
+      const input = modal.querySelector("#financeiroComprovantesInput");
+      const button = modal.querySelector("#financeiroUploadComprovanteBtn");
+      try {
+        const anexosPayload = await lerArquivosFinanceiroComoDataUrl(input?.files);
+        if (!anexosPayload.length) {
+          showToast("Selecione ao menos um comprovante", "error");
+          return;
+        }
+        button.disabled = true;
+        button.textContent = "Enviando...";
+        await enviarComprovantesFinanceiros(cobranca.id, anexosPayload);
+        showToast("Comprovante anexado com sucesso");
+        await abrirDetalheFinanceiro(cobranca.id);
+      } catch (error) {
+        showToast(error.message || "Erro ao anexar comprovante", "error");
+      } finally {
+        button.disabled = false;
+        button.textContent = "Anexar comprovante";
+      }
+    });
   } catch (error) {
     console.error(error);
     modal.innerHTML = `

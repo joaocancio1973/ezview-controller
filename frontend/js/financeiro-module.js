@@ -783,14 +783,10 @@ async function abrirDetalheFinanceiro(id) {
               <small>${cobranca.pago_em ? `Pago em ${escapeMensagemHtml(formatarDataCurtaFinanceiro(cobranca.pago_em))}` : "Sem pagamento confirmado"}</small>
             </article>
             <article>
-              <span>Responsavel financeiro</span>
+              <span>Responsavel / cobranca</span>
               <strong>${escapeMensagemHtml(cobranca.responsavel_financeiro_nome || "Nao vinculado")}</strong>
               <small>${escapeMensagemHtml(cobranca.responsavel_financeiro_email || cobranca.responsavel_financeiro_telefone || "-")}</small>
-            </article>
-            <article>
-              <span>Cobranca habilitada</span>
-              <strong>${Number(cobranca.responsavel_financeiro_ativo_para_cobranca) === 1 ? "Sim" : "Nao"}</strong>
-              <small>${escapeMensagemHtml(cobranca.responsavel_financeiro_ambiente || "teste")} | ${Number(cobranca.responsavel_financeiro_recebe_cobranca) === 1 ? "Recebe notificacao" : "Sem recebimento"}</small>
+              <small>${Number(cobranca.responsavel_financeiro_ativo_para_cobranca) === 1 ? "Cobranca habilitada" : "Cobranca bloqueada"} | ${escapeMensagemHtml(cobranca.responsavel_financeiro_ambiente || "teste")} | ${Number(cobranca.responsavel_financeiro_recebe_cobranca) === 1 ? "Recebe aviso" : "Sem aviso"}</small>
             </article>
           </div>
 

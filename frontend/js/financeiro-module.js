@@ -438,6 +438,12 @@ function renderFinanceiro(container) {
     </div>
 
     <div class="panel funcionarios-panel financeiro-table-panel">
+      <div class="financeiro-section-head">
+        <div>
+          <h3>Cobrancas</h3>
+          <p>Use o botao Detalhe para abrir historico, comprovantes e contexto da cobranca.</p>
+        </div>
+      </div>
       <table class="funcionarios-table financeiro-table" id="financeiroTable">
         <thead>
           <tr>

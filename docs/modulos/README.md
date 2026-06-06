@@ -29,6 +29,7 @@ Modulos iniciais:
 - prestadores de servico
 - financeiro e cobrancas
 - plano final de conclusao do financeiro
+- checklist final de conclusao do financeiro
 - arquitetura de boletos
 - plano de implementacao de boletos
 - checklist tecnico de execucao de boletos

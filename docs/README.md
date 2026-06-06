@@ -48,6 +48,8 @@ Objetivos desta documentacao:
   - fase 1 do dominio financeiro e de cobrancas operacionais
 - `modulos/financeiro-plano-final-conclusao.md`
   - trilha executiva de fechamento do capitulo financeiro
+- `modulos/financeiro-checklist-final-conclusao.md`
+  - checklist final com estado atual, pendencias e ordem de fechamento do modulo
 - `modulos/financeiro-boletos-arquitetura.md`
   - arquitetura oficial do financeiro com boletos, webhook e notificacao automatica
 - `modulos/financeiro-boletos-plano-implementacao.md`
